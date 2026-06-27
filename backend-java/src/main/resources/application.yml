@@ -1,0 +1,43 @@
+spring:
+  application:
+    name: makeupseven-api
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/makeupseven}
+    username: ${SPRING_DATASOURCE_USERNAME:makeupseven}
+    password: ${SPRING_DATASOURCE_PASSWORD:makeupseven_dev}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+server:
+  port: 8080
+  error:
+    include-message: always
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+makeupseven:
+  jwt:
+    secret: ${JWT_SECRET:makeupseven-dev-secret-key-minimum-256-bits-required-for-hs256-algorithm}
+    expiration-ms: 86400000
+  razorpay:
+    key-id: ${RAZORPAY_KEY_ID:}
+    key-secret: ${RAZORPAY_KEY_SECRET:}
+  python-service-url: ${PYTHON_SERVICE_URL:http://localhost:8000}
+  frontend-url: ${FRONTEND_URL:http://localhost:3000}
+  commission-rate: 0.10
+  deposit-rate: 0.25
+  pro-tier-price: 99900
+  free-tier-bookings: 3
