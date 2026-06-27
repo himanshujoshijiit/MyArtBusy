@@ -52,8 +52,14 @@ public class MuaProfileService {
         if (request.getLongitude() != null) profile.setLongitude(request.getLongitude());
         if (request.getCountry() != null) profile.setCountry(request.getCountry());
         if (request.getCountryCode() != null) profile.setCountryCode(request.getCountryCode());
-        if (request.getOccasions() != null) profile.setOccasions(request.getOccasions());
-        if (request.getSkinToneExpertise() != null) profile.setSkinToneExpertise(request.getSkinToneExpertise());
+        if (request.getOccasions() != null) {
+            profile.getOccasions().clear();
+            profile.getOccasions().addAll(request.getOccasions());
+        }
+        if (request.getSkinToneExpertise() != null) {
+            profile.getSkinToneExpertise().clear();
+            profile.getSkinToneExpertise().addAll(request.getSkinToneExpertise());
+        }
         if (request.getMinPrice() != null) profile.setMinPrice(request.getMinPrice());
         if (request.getMaxPrice() != null) profile.setMaxPrice(request.getMaxPrice());
         return toResponse(muaProfileRepository.save(profile));

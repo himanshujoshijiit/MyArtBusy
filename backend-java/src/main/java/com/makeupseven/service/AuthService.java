@@ -57,6 +57,7 @@ public class AuthService {
         return buildAuthResponse(user, muaProfileId);
     }
 
+    @Transactional
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("Invalid email or password"));
@@ -147,8 +148,14 @@ public class AuthService {
         if (request.getPincode() != null) profile.setPincode(request.getPincode());
         if (request.getLatitude() != null) profile.setLatitude(request.getLatitude());
         if (request.getLongitude() != null) profile.setLongitude(request.getLongitude());
-        if (request.getOccasions() != null) profile.setOccasions(request.getOccasions());
-        if (request.getSkinToneExpertise() != null) profile.setSkinToneExpertise(request.getSkinToneExpertise());
+        if (request.getOccasions() != null) {
+            profile.getOccasions().clear();
+            profile.getOccasions().addAll(request.getOccasions());
+        }
+        if (request.getSkinToneExpertise() != null) {
+            profile.getSkinToneExpertise().clear();
+            profile.getSkinToneExpertise().addAll(request.getSkinToneExpertise());
+        }
         if (request.getMinPrice() != null) profile.setMinPrice(request.getMinPrice());
         if (request.getMaxPrice() != null) profile.setMaxPrice(request.getMaxPrice());
         profile.setOnboardingComplete(true);

@@ -112,7 +112,10 @@ public class DashboardService {
         if (request.getSkinTone() != null) profile.setSkinTone(request.getSkinTone());
         if (request.getAllergies() != null) profile.setAllergies(request.getAllergies());
         if (request.getNotes() != null) profile.setNotes(request.getNotes());
-        if (request.getPastLooks() != null) profile.setPastLooks(request.getPastLooks());
+        if (request.getPastLooks() != null) {
+            profile.getPastLooks().clear();
+            profile.getPastLooks().addAll(request.getPastLooks());
+        }
 
         return toClientProfile(clientFaceProfileRepository.save(profile));
     }
