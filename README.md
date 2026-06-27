@@ -2,6 +2,8 @@
 
 **Portfolio-first makeup artist discovery & booking platform** — built for Bengaluru launch, designed to scale globally.
 
+📖 **[Full HTML Guide](docs/index.html)** — features, setup steps, demo accounts, API reference, deployment, troubleshooting (also at `GUIDE.html` in project root).
+
 ## Architecture
 
 | Service | Tech | Port | Role |

@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MakeupSeven (MyArtBusy) — Complete Guide</title>
+  <style>
+    :root {
+      --rose: #e11d5a;
+      --rose-light: #fff5f7;
+      --gold: #d4952f;
+      --charcoal: #1a1a2e;
+      --cream: #faf8f5;
+      --border: rgba(26, 26, 46, 0.1);
+      --shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: Georgia, "Times New Roman", serif;
+      background: var(--cream);
+      color: var(--charcoal);
+      line-height: 1.65;
+    }
+    .sans { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+    header {
+      background: linear-gradient(135deg, #fff5f7 0%, #fdfaf3 50%, #ffe4ea 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 3rem 1.5rem 2.5rem;
+      text-align: center;
+    }
+    header h1 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    header h1 span { color: var(--rose); }
+    header p { color: rgba(26, 26, 46, 0.65); max-width: 640px; margin: 0 auto 1.5rem; }
+    .badges { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; }
+    .badge {
+      display: inline-block;
+      padding: 0.35rem 0.85rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-family: system-ui, sans-serif;
+      font-weight: 600;
+      background: white;
+      border: 1px solid var(--border);
+    }
+    .badge-rose { background: var(--rose-light); color: var(--rose); border-color: #fecdd8; }
+    .badge-gold { background: #fdfaf3; color: #9a6118; border-color: #f2deb3; }
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+    nav inner {
+      display: flex;
+      gap: 0.25rem;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0.75rem 1rem;
+    }
+    nav a {
+      display: inline-block;
+      padding: 0.45rem 0.9rem;
+      font-family: system-ui, sans-serif;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: rgba(26, 26, 46, 0.7);
+      text-decoration: none;
+      border-radius: 999px;
+      transition: background 0.15s, color 0.15s;
+    }
+    nav a:hover { background: var(--rose-light); color: var(--rose); }
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+    section { margin-bottom: 3rem; scroll-margin-top: 4rem; }
+    h2 {
+      font-size: 1.75rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--rose-light);
+    }
+    h3 {
+      font-size: 1.15rem;
+      margin: 1.5rem 0 0.75rem;
+      font-family: system-ui, sans-serif;
+    }
+    p, li { font-family: system-ui, sans-serif; font-size: 0.95rem; color: rgba(26, 26, 46, 0.85); }
+    ul, ol { padding-left: 1.25rem; margin: 0.75rem 0; }
+    li { margin-bottom: 0.4rem; }
+    .card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 1.5rem;
+      margin: 1rem 0;
+    }
+    .grid-2 { display: grid; gap: 1rem; }
+    @media (min-width: 700px) { .grid-2 { grid-template-columns: 1fr 1fr; } }
+    @media (min-width: 900px) { .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; } }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: system-ui, sans-serif;
+      font-size: 0.875rem;
+      margin: 1rem 0;
+    }
+    th, td {
+      text-align: left;
+      padding: 0.65rem 0.85rem;
+      border-bottom: 1px solid var(--border);
+    }
+    th { background: var(--rose-light); font-weight: 600; }
+    tr:hover td { background: #fafafa; }
+    code, pre {
+      font-family: "Cascadia Code", "Consolas", monospace;
+      font-size: 0.82rem;
+    }
+    pre {
+      background: #1a1a2e;
+      color: #e2e8f0;
+      padding: 1.25rem;
+      border-radius: 12px;
+      overflow-x: auto;
+      margin: 1rem 0;
+      line-height: 1.5;
+    }
+    code {
+      background: rgba(225, 29, 90, 0.08);
+      color: var(--rose);
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+    }
+    pre code { background: none; color: inherit; padding: 0; }
+    .step {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+      margin: 1rem 0;
+    }
+    .step-num {
+      flex-shrink: 0;
+      width: 2rem;
+      height: 2rem;
+      background: var(--rose);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: system-ui, sans-serif;
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+    .feature-icon {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .feature-card h4 {
+      font-family: system-ui, sans-serif;
+      font-size: 1rem;
+      margin-bottom: 0.35rem;
+    }
+    .feature-card p { font-size: 0.85rem; color: rgba(26, 26, 46, 0.65); }
+    .flow {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem;
+      margin: 1rem 0;
+      font-family: system-ui, sans-serif;
+      font-size: 0.85rem;
+    }
+    .flow span {
+      background: white;
+      border: 1px solid var(--border);
+      padding: 0.4rem 0.75rem;
+      border-radius: 8px;
+    }
+    .flow .arrow { color: var(--rose); font-weight: bold; border: none; background: none; padding: 0; }
+    .alert {
+      border-left: 4px solid var(--gold);
+      background: #fdfaf3;
+      padding: 1rem 1.25rem;
+      border-radius: 0 8px 8px 0;
+      margin: 1rem 0;
+      font-family: system-ui, sans-serif;
+      font-size: 0.9rem;
+    }
+    .alert-info { border-color: var(--rose); background: var(--rose-light); }
+    .checklist { list-style: none; padding-left: 0; }
+    .checklist li::before { content: "☐ "; color: var(--rose); font-weight: bold; }
+    footer {
+      text-align: center;
+      padding: 2rem;
+      border-top: 1px solid var(--border);
+      font-family: system-ui, sans-serif;
+      font-size: 0.85rem;
+      color: rgba(26, 26, 46, 0.5);
+    }
+    a { color: var(--rose); }
+    .btn {
+      display: inline-block;
+      background: var(--rose);
+      color: white !important;
+      padding: 0.65rem 1.25rem;
+      border-radius: 999px;
+      text-decoration: none;
+      font-family: system-ui, sans-serif;
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+    }
+    .btn:hover { background: #be1249; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Makeup<span>Seven</span></h1>
+  <p class="sans">Portfolio-first makeup artist discovery &amp; booking platform — MyArtBusy monorepo. Built for Bengaluru launch, designed to scale globally.</p>
+  <div class="badges sans">
+    <span class="badge badge-rose">Next.js 14</span>
+    <span class="badge badge-rose">Java Spring Boot</span>
+    <span class="badge badge-rose">Python FastAPI</span>
+    <span class="badge badge-gold">PostgreSQL 16</span>
+    <span class="badge badge-gold">Docker</span>
+  </div>
+  <p class="sans" style="margin-top:1rem;font-size:0.85rem;">
+    GitHub: <a href="https://github.com/himanshujoshijiit/MyArtBusy" target="_blank">github.com/himanshujoshijiit/MyArtBusy</a>
+  </p>
+</header>
+
+<nav class="sans">
+  <inner>
+    <a href="#quickstart">Quick Start</a>
+    <a href="#architecture">Architecture</a>
+    <a href="#features">Features</a>
+    <a href="#pages">App Pages</a>
+    <a href="#demo">Demo Accounts</a>
+    <a href="#booking-flow">Booking Flow</a>
+    <a href="#revenue">Revenue</a>
+    <a href="#env">Environment</a>
+    <a href="#deploy">Deployment</a>
+    <a href="#local-dev">Local Dev</a>
+    <a href="#api">API Reference</a>
+    <a href="#launch">Launch Checklist</a>
+    <a href="#troubleshoot">Troubleshooting</a>
+  </inner>
+</nav>
+
+<main>
+
+  <!-- QUICK START -->
+  <section id="quickstart">
+    <h2>Quick Start — Run in 5 Minutes</h2>
+
+    <div class="alert alert-info sans">
+      <strong>Prerequisite:</strong> Install <a href="https://www.docker.com/products/docker-desktop/" target="_blank">Docker Desktop</a> and make sure it is running before you start.
+    </div>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div>
+        <h3 class="sans" style="margin-top:0">Clone the repository</h3>
+        <pre><code>git clone https://github.com/himanshujoshijiit/MyArtBusy.git
+cd MyArtBusy</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div>
+        <h3 class="sans" style="margin-top:0">Create environment file</h3>
+        <pre><code># Windows
+copy .env.example .env
+
+# Mac / Linux
+cp .env.example .env</code></pre>
+        <p>Edit <code>.env</code> only when you need live Razorpay or WhatsApp. Demo mode works without keys.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div>
+        <h3 class="sans" style="margin-top:0">Start all services</h3>
+        <pre><code>docker compose up --build</code></pre>
+        <p>First build takes 3–5 minutes. Wait until you see all containers healthy.</p>
+        <p><strong>Windows shortcut:</strong> double-click <code>start.bat</code></p>
+        <pre><code># Run in background (detached)
+docker compose up --build -d</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div>
+        <h3 class="sans" style="margin-top:0">Open the app</h3>
+        <table>
+          <thead><tr><th>URL</th><th>What it is</th></tr></thead>
+          <tbody>
+            <tr><td><a href="http://localhost:3000" target="_blank">http://localhost:3000</a></td><td><strong>Main app</strong> — start here</td></tr>
+            <tr><td><a href="http://localhost:8080/actuator/health" target="_blank">http://localhost:8080/actuator/health</a></td><td>Java API health check</td></tr>
+            <tr><td><a href="http://localhost:8000/health" target="_blank">http://localhost:8000/health</a></td><td>Python search API health</td></tr>
+            <tr><td><a href="http://localhost:8000/docs" target="_blank">http://localhost:8000/docs</a></td><td>FastAPI Swagger documentation</td></tr>
+          </tbody>
+        </table>
+        <a class="btn" href="http://localhost:3000" target="_blank">Open MakeupSeven App →</a>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div>
+        <h3 class="sans" style="margin-top:0">Stop the app</h3>
+        <pre><code>docker compose down
+
+# Stop and remove database volume (fresh start)
+docker compose down -v</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ARCHITECTURE -->
+  <section id="architecture">
+    <h2>Architecture</h2>
+    <div class="card">
+      <pre><code>┌─────────────┐     ┌──────────────────┐     ┌───────────────────┐
+│  Frontend   │────▶│  Java API :8080  │────▶│  PostgreSQL :5432   │
+│  Next.js    │     │  Spring Boot 3   │     │  Shared database    │
+│  :3000      │     │  Auth, bookings, │     └───────────────────┘
+└──────┬──────┘     │  payments, dash  │              ▲
+       │            └────────┬─────────┘              │
+       │                     │                        │
+       └────────────────────▶│  Python API :8000  ────┘
+                             │  FastAPI — search,
+                             │  WhatsApp, analytics
+                             └────────────────────</code></pre>
+    </div>
+    <table>
+      <thead>
+        <tr><th>Service</th><th>Technology</th><th>Port</th><th>Responsibility</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Frontend</td><td>Next.js 14 + Tailwind CSS</td><td>3000</td><td>Client &amp; MUA user interface</td></tr>
+        <tr><td>Core API</td><td>Java 17 + Spring Boot 3</td><td>8080</td><td>Auth, bookings, Razorpay, reviews, dashboard, courses</td></tr>
+        <tr><td>Search API</td><td>Python 3.12 + FastAPI</td><td>8000</td><td>Occasion-based search, WhatsApp notifications, analytics</td></tr>
+        <tr><td>Database</td><td>PostgreSQL 16</td><td>5432</td><td>Persistent data store for all services</td></tr>
+      </tbody>
+    </table>
+    <h3 class="sans">Project folder structure</h3>
+    <pre><code>MyArtBusy/
+├── frontend/           # Next.js app (pages, components, API client)
+├── backend-java/       # Spring Boot REST API
+├── backend-python/     # FastAPI search &amp; notifications
+├── docker-compose.yml  # One-command deployment
+├── .env.example        # Environment template
+├── scripts/init-db.sql # PostgreSQL init
+├── start.bat           # Windows launcher
+├── docs/index.html     # This guide
+└── README.md</code></pre>
+  </section>
+
+  <!-- FEATURES -->
+  <section id="features">
+    <h2>Features</h2>
+
+    <h3 class="sans">Core 1 — MUA Discovery Engine</h3>
+    <div class="grid-3">
+      <div class="card feature-card">
+        <div class="feature-icon">🔍</div>
+        <h4>Occasion-based search</h4>
+        <p>Search by city + occasion — e.g. "Bridal Bengaluru", "Party Indiranagar". Portfolio drives discovery, not price.</p>
+      </div>
+      <div class="card feature-card">
+        <div class="feature-icon">🖼️</div>
+        <h4>Artist profiles</h4>
+        <p>Portfolio gallery, services, pricing, verified reviews, skin tone expertise, response time label.</p>
+      </div>
+      <div class="card feature-card">
+        <div class="feature-icon">🎛️</div>
+        <h4>Advanced filters</h4>
+        <p>Skin tone, min/max budget, min rating, available date, top artists only, locality, sort by rating/price/bookings.</p>
+      </div>
+    </div>
+
+    <h3 class="sans">Core 2 — Booking &amp; Payment</h3>
+    <div class="grid-3">
+      <div class="card feature-card">
+        <div class="feature-icon">📅</div>
+        <h4>Calendar availability</h4>
+        <p>MUAs add slots from dashboard. Clients pick date &amp; time when booking. Public availability on artist profiles.</p>
+      </div>
+      <div class="card feature-card">
+        <div class="feature-icon">💳</div>
+        <h4>Razorpay deposit (25%)</h4>
+        <p>Secure upfront deposit. Mock mode works without API keys for demo. Live keys from Razorpay dashboard.</p>
+      </div>
+      <div class="card feature-card">
+        <div class="feature-icon">📱</div>
+        <h4>WhatsApp confirmation</h4>
+        <p>Auto message to client &amp; artist after deposit payment. Mock mode logs to console without Meta API keys.</p>
+      </div>
+      <div class="card feature-card">
+        <div class="feature-icon">✍️</div>
+        <h4>Contract e-sign</h4>
+        <p>Digital service agreement generated after payment. Client signs at <code>/contracts/[bookingId]</code>.</p>
+      </div>
+    </div>
+
+    <h3 class="sans">Core 3 — Reviews &amp; Trust</h3>
+    <div class="grid-2">
+      <div class="card feature-card">
+        <div class="feature-icon">✅</div>
+        <h4>Verified reviews only</h4>
+        <p>Only clients who completed a booking can leave a review. WhatsApp sends review link after service.</p>
+      </div>
+      <div class="card feature-card">
+        <div class="feature-icon">👑</div>
+        <h4>Top Artist badges</h4>
+        <p>Auto-awarded at 4.5+ rating with 5+ reviews. Featured/sponsored artists appear with badge in search.</p>
+      </div>
+    </div>
+
+    <h3 class="sans">Core 4 — MUA Business Dashboard</h3>
+    <div class="grid-3">
+      <div class="card feature-card">
+        <div class="feature-icon">📊</div>
+        <h4>Earnings tracker</h4>
+        <p>Gross &amp; net earnings (after 10% commission). Monthly and total stats.</p>
+      </div>
+      <div class="card feature-card">
+        <div class="feature-icon">🗓️</div>
+        <h4>Booking calendar</h4>
+        <p>Manage availability slots, view upcoming bookings, confirm/complete/cancel.</p>
+      </div>
+      <div class="card feature-card">
+        <div class="feature-icon">👤</div>
+        <h4>Client face profiles</h4>
+        <p>Skin tone, allergies, notes, past looks. Auto-created when booking is completed.</p>
+      </div>
+      <div class="card feature-card">
+        <div class="feature-icon">💄</div>
+        <h4>Kit inventory</h4>
+        <p>Track products, expiry dates, low-stock alerts on dashboard.</p>
+      </div>
+      <div class="card feature-card">
+        <div class="feature-icon">⚙️</div>
+        <h4>Profile editor</h4>
+        <p>Update bio, pricing, add portfolio images &amp; services from dashboard.</p>
+      </div>
+      <div class="card feature-card">
+        <div class="feature-icon">⭐</div>
+        <h4>Pro subscription</h4>
+        <p>₹999/month — unlimited bookings, full analytics. Free tier: 3 bookings/month.</p>
+      </div>
+    </div>
+
+    <h3 class="sans">Core 5 — Education &amp; Academy (Phase 2)</h3>
+    <div class="card feature-card">
+      <div class="feature-icon">🎓</div>
+      <h4>Online courses</h4>
+      <p>Course catalog at <code>/courses</code>. 70% revenue to instructor, 30% to platform. 3 demo courses seeded (Bridal Masterclass, Editorial, Beginner Basics).</p>
+    </div>
+  </section>
+
+  <!-- APP PAGES -->
+  <section id="pages">
+    <h2>App Pages &amp; Routes</h2>
+    <table>
+      <thead><tr><th>Route</th><th>Who uses it</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>/</code></td><td>Everyone</td><td>Homepage — search, top artists, featured MUAs</td></tr>
+        <tr><td><code>/search</code></td><td>Clients</td><td>Advanced search with filters &amp; sorting</td></tr>
+        <tr><td><code>/artist/[id]</code></td><td>Clients</td><td>Artist profile — portfolio, services, reviews, availability</td></tr>
+        <tr><td><code>/artist/[id]/book</code></td><td>Clients</td><td>Booking flow — select slot, pay deposit</td></tr>
+        <tr><td><code>/login</code></td><td>Everyone</td><td>Sign in</td></tr>
+        <tr><td><code>/register</code></td><td>Everyone</td><td>Sign up as Client or MUA</td></tr>
+        <tr><td><code>/bookings</code></td><td>Logged in</td><td>My bookings — cancel, review, contract link</td></tr>
+        <tr><td><code>/dashboard</code></td><td>MUAs</td><td>Business dashboard — 6 tabs</td></tr>
+        <tr><td><code>/subscription</code></td><td>MUAs</td><td>Upgrade to Pro ₹999/month</td></tr>
+        <tr><td><code>/contracts/[id]</code></td><td>Client/MUA</td><td>View &amp; e-sign service contract</td></tr>
+        <tr><td><code>/review/[bookingId]</code></td><td>Clients</td><td>Leave verified review (WhatsApp link)</td></tr>
+        <tr><td><code>/courses</code></td><td>Everyone</td><td>MakeupSeven Academy — online courses</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- DEMO ACCOUNTS -->
+  <section id="demo">
+    <h2>Demo Accounts</h2>
+    <p>5 makeup artists are pre-seeded in Bengaluru with portfolios, services, and 14 days of availability.</p>
+    <table>
+      <thead><tr><th>Role</th><th>Email</th><th>Password</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Client</td><td><code>demo@makeupseven.com</code></td><td><code>demo123</code></td><td>Book artists, pay deposit, sign contract, review</td></tr>
+        <tr><td>MUA — Top Artist</td><td><code>priya@makeupseven.com</code></td><td><code>artist123</code></td><td>Bridal specialist, Pro tier, featured</td></tr>
+        <tr><td>MUA</td><td><code>ananya@makeupseven.com</code></td><td><code>artist123</code></td><td>Editorial &amp; party makeup</td></tr>
+        <tr><td>MUA</td><td><code>meera@makeupseven.com</code></td><td><code>artist123</code></td><td>Film &amp; TV makeup</td></tr>
+        <tr><td>MUA</td><td><code>kavya@makeupseven.com</code></td><td><code>artist123</code></td><td>Affordable bridal, free tier</td></tr>
+        <tr><td>MUA</td><td><code>divya@makeupseven.com</code></td><td><code>artist123</code></td><td>Luxury bridal, Pro tier</td></tr>
+      </tbody>
+    </table>
+
+    <h3 class="sans">Suggested test flows</h3>
+    <ol>
+      <li><strong>Client books artist:</strong> Login as demo client → search Bridal Bengaluru → open Priya → Book → pick slot → pay deposit (mock) → sign contract</li>
+      <li><strong>MUA manages business:</strong> Login as priya@makeupseven.com → Dashboard → Calendar tab → add slots → confirm booking → mark complete</li>
+      <li><strong>Leave review:</strong> After MUA marks complete → client goes to Bookings → submit review</li>
+      <li><strong>Upgrade Pro:</strong> Login as kavya@makeupseven.com → /subscription → upgrade (mock payment)</li>
+      <li><strong>Academy:</strong> Visit /courses → enroll in a course</li>
+    </ol>
+  </section>
+
+  <!-- BOOKING FLOW -->
+  <section id="booking-flow">
+    <h2>Booking Flow</h2>
+    <div class="flow">
+      <span>1. Client searches</span>
+      <span class="arrow">→</span>
+      <span>2. Views portfolio</span>
+      <span class="arrow">→</span>
+      <span>3. Selects slot</span>
+      <span class="arrow">→</span>
+      <span>4. Pays 25% deposit</span>
+      <span class="arrow">→</span>
+      <span>5. WhatsApp sent</span>
+      <span class="arrow">→</span>
+      <span>6. Client signs contract</span>
+      <span class="arrow">→</span>
+      <span>7. MUA confirms</span>
+      <span class="arrow">→</span>
+      <span>8. Service done</span>
+      <span class="arrow">→</span>
+      <span>9. MUA marks complete</span>
+      <span class="arrow">→</span>
+      <span>10. Review request via WhatsApp</span>
+    </div>
+    <div class="card sans">
+      <strong>Booking statuses:</strong>
+      <code>PENDING</code> → <code>DEPOSIT_PAID</code> → <code>CONFIRMED</code> → <code>COMPLETED</code>
+      &nbsp;|&nbsp; <code>CANCELLED</code> at any point before completion
+    </div>
+  </section>
+
+  <!-- REVENUE -->
+  <section id="revenue">
+    <h2>Revenue Model (Built In)</h2>
+    <table>
+      <thead><tr><th>Stream</th><th>Details</th><th>Implementation</th></tr></thead>
+      <tbody>
+        <tr><td>Free tier</td><td>MUAs get 3 bookings/month free</td><td>Enforced in Java API — blocks 4th booking</td></tr>
+        <tr><td>Pro tier</td><td>₹999/month — unlimited bookings + dashboard</td><td><code>/subscription</code> page + Razorpay</td></tr>
+        <tr><td>Commission</td><td>10% on every booking</td><td>Calculated on booking, shown in dashboard net earnings</td></tr>
+        <tr><td>Deposit</td><td>25% upfront via Razorpay</td><td>Remaining 75% paid on service day (offline)</td></tr>
+        <tr><td>Courses</td><td>70% instructor / 30% platform</td><td><code>/courses</code> enrollment</td></tr>
+        <tr><td>Featured ads</td><td>Beauty brands in search (Phase 2)</td><td><code>featured</code> flag + sponsored badge in search</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ENV -->
+  <section id="env">
+    <h2>Environment Variables</h2>
+    <p>Copy <code>.env.example</code> to <code>.env</code> and configure:</p>
+    <table>
+      <thead><tr><th>Variable</th><th>Required</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>JWT_SECRET</code></td><td>Yes (production)</td><td>Min 256-bit secret for JWT auth tokens</td></tr>
+        <tr><td><code>RAZORPAY_KEY_ID</code></td><td>For live payments</td><td>From <a href="https://dashboard.razorpay.com" target="_blank">Razorpay dashboard</a></td></tr>
+        <tr><td><code>RAZORPAY_KEY_SECRET</code></td><td>For live payments</td><td>Razorpay secret key</td></tr>
+        <tr><td><code>WHATSAPP_API_KEY</code></td><td>For WhatsApp</td><td>Meta Cloud API bearer token</td></tr>
+        <tr><td><code>WHATSAPP_PHONE_ID</code></td><td>For WhatsApp</td><td>WhatsApp Business phone number ID</td></tr>
+        <tr><td><code>FRONTEND_URL</code></td><td>Yes (production)</td><td>e.g. https://yourdomain.com — used for CORS &amp; contract links</td></tr>
+        <tr><td><code>NEXT_PUBLIC_API_URL</code></td><td>Yes (production)</td><td>Java API URL exposed to browser</td></tr>
+        <tr><td><code>NEXT_PUBLIC_SEARCH_URL</code></td><td>Yes (production)</td><td>Python search API URL exposed to browser</td></tr>
+      </tbody>
+    </table>
+    <div class="alert sans">
+      <strong>Demo mode:</strong> Without Razorpay keys, deposits auto-confirm with mock payment. Without WhatsApp keys, notifications are logged to the Python service console.
+    </div>
+  </section>
+
+  <!-- DEPLOYMENT -->
+  <section id="deploy">
+    <h2>Production Deployment</h2>
+
+    <h3 class="sans">Option A — Single VPS (DigitalOcean / AWS EC2 / Hetzner)</h3>
+    <pre><code># On your server
+git clone https://github.com/himanshujoshijiit/MyArtBusy.git
+cd MyArtBusy
+cp .env.example .env
+# Edit .env — set JWT_SECRET, Razorpay keys, FRONTEND_URL, API URLs
+
+docker compose up -d --build</code></pre>
+    <p>Put nginx or Caddy in front for HTTPS and map your domain to ports 3000, 8080, 8000.</p>
+
+    <h3 class="sans">Option B — Cloud (scale globally)</h3>
+    <table>
+      <thead><tr><th>Component</th><th>Suggested platform</th></tr></thead>
+      <tbody>
+        <tr><td>Frontend</td><td>Vercel, AWS Amplify, or Docker on ECS</td></tr>
+        <tr><td>Java API</td><td>AWS ECS, Google Cloud Run, Railway</td></tr>
+        <tr><td>Python API</td><td>Cloud Run or separate ECS service</td></tr>
+        <tr><td>Database</td><td>AWS RDS, Supabase, or Neon PostgreSQL</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- LOCAL DEV -->
+  <section id="local-dev">
+    <h2>Local Development (Without Full Docker)</h2>
+    <p>Requires: Java 17+, Maven, Python 3.12+, Node.js 20+, PostgreSQL</p>
+    <pre><code># Terminal 1 — Database only via Docker
+docker compose up postgres -d
+
+# Terminal 2 — Java API
+cd backend-java
+mvn spring-boot:run
+
+# Terminal 3 — Python search API
+cd backend-python
+pip install -r requirements.txt
+uvicorn app.main:app --reload --port 8000
+
+# Terminal 4 — Frontend
+cd frontend
+npm install
+npm run dev</code></pre>
+    <p>Frontend dev server: <code>http://localhost:3000</code> (with hot reload)</p>
+  </section>
+
+  <!-- API -->
+  <section id="api">
+    <h2>API Reference (Key Endpoints)</h2>
+
+    <h3 class="sans">Java API — <code>http://localhost:8080</code></h3>
+    <table>
+      <thead><tr><th>Method</th><th>Endpoint</th><th>Auth</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>POST</td><td><code>/api/auth/register</code></td><td>No</td><td>Register client or MUA</td></tr>
+        <tr><td>POST</td><td><code>/api/auth/login</code></td><td>No</td><td>Login, returns JWT token</td></tr>
+        <tr><td>GET</td><td><code>/api/muas</code></td><td>No</td><td>List all artists</td></tr>
+        <tr><td>GET</td><td><code>/api/muas/{id}</code></td><td>No</td><td>Artist profile</td></tr>
+        <tr><td>GET</td><td><code>/api/muas/top</code></td><td>No</td><td>Top artists</td></tr>
+        <tr><td>POST</td><td><code>/api/bookings</code></td><td>Yes</td><td>Create booking</td></tr>
+        <tr><td>POST</td><td><code>/api/payments/deposit/{id}</code></td><td>Yes</td><td>Create Razorpay deposit order</td></tr>
+        <tr><td>POST</td><td><code>/api/payments/verify</code></td><td>Yes</td><td>Verify payment signature</td></tr>
+        <tr><td>GET</td><td><code>/api/bookings/availability/{muaId}</code></td><td>No</td><td>Get open slots</td></tr>
+        <tr><td>POST</td><td><code>/api/bookings/{id}/confirm</code></td><td>MUA</td><td>Confirm booking</td></tr>
+        <tr><td>POST</td><td><code>/api/bookings/{id}/complete</code></td><td>MUA</td><td>Mark complete + review request</td></tr>
+        <tr><td>POST</td><td><code>/api/reviews</code></td><td>Client</td><td>Submit verified review</td></tr>
+        <tr><td>GET</td><td><code>/api/dashboard/stats</code></td><td>MUA</td><td>Earnings &amp; stats</td></tr>
+        <tr><td>GET/POST</td><td><code>/api/contracts/{bookingId}</code></td><td>Yes</td><td>View / sign contract</td></tr>
+        <tr><td>POST</td><td><code>/api/subscription/pro/order</code></td><td>MUA</td><td>Pro upgrade payment</td></tr>
+        <tr><td>GET</td><td><code>/api/courses</code></td><td>No</td><td>List academy courses</td></tr>
+      </tbody>
+    </table>
+
+    <h3 class="sans">Python API — <code>http://localhost:8000</code></h3>
+    <table>
+      <thead><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>POST</td><td><code>/api/search</code></td><td>Occasion-based artist search with filters</td></tr>
+        <tr><td>GET</td><td><code>/api/search/occasions</code></td><td>List occasion types</td></tr>
+        <tr><td>GET</td><td><code>/api/search/cities</code></td><td>List cities with artists</td></tr>
+        <tr><td>POST</td><td><code>/api/notifications/booking-confirmation</code></td><td>Send WhatsApp to client &amp; MUA</td></tr>
+        <tr><td>POST</td><td><code>/api/notifications/review-request</code></td><td>Send review link via WhatsApp</td></tr>
+        <tr><td>GET</td><td><code>/api/analytics/top-artists/{city}</code></td><td>Top artists analytics</td></tr>
+      </tbody>
+    </table>
+    <p>Full interactive docs: <a href="http://localhost:8000/docs" target="_blank">http://localhost:8000/docs</a></p>
+  </section>
+
+  <!-- LAUNCH CHECKLIST -->
+  <section id="launch">
+    <h2>Go-To-Market Launch Checklist</h2>
+    <div class="card">
+      <h3 class="sans" style="margin-top:0">Month 1–2 — Bengaluru launch</h3>
+      <ul class="checklist sans">
+        <li>Replace Priya Sharma seed profile with your wife's real portfolio &amp; photos</li>
+        <li>Get 10 real bookings through the platform for Artist #1</li>
+        <li>Manually onboard 20–30 Bengaluru MUAs via Instagram DMs</li>
+        <li>Offer free Pro for 6 months to build supply</li>
+        <li>Set Razorpay live keys in production <code>.env</code></li>
+        <li>Connect WhatsApp Business API (Meta Cloud)</li>
+        <li>Point domain + SSL certificate</li>
+      </ul>
+      <h3 class="sans">Month 3–4 — Growth</h3>
+      <ul class="checklist sans">
+        <li>Use Artist #1 success story to convert MUAs to paid Pro (₹999/mo)</li>
+        <li>Run Google Ads: "bridal makeup artist Bengaluru"</li>
+        <li>Enable verified reviews &amp; referral program</li>
+      </ul>
+      <h3 class="sans">Month 5+ — Expand</h3>
+      <ul class="checklist sans">
+        <li>Expand to Chennai, Hyderabad, Mumbai</li>
+        <li>Launch Academy courses with wife as first instructor</li>
+        <li>Onboard beauty brand featured ads</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- TROUBLESHOOTING -->
+  <section id="troubleshoot">
+    <h2>Troubleshooting</h2>
+    <table>
+      <thead><tr><th>Problem</th><th>Solution</th></tr></thead>
+      <tbody>
+        <tr><td>Docker not starting</td><td>Ensure Docker Desktop is running. Wait 30–60s after opening it.</td></tr>
+        <tr><td>Port already in use</td><td>Stop other apps on 3000/8080/8000/5432 or change ports in docker-compose.yml</td></tr>
+        <tr><td>Frontend can't reach API</td><td>Check <code>NEXT_PUBLIC_API_URL</code> and <code>NEXT_PUBLIC_SEARCH_URL</code> in .env</td></tr>
+        <tr><td>Java API not healthy</td><td>Wait 60s for startup. Run <code>docker compose logs backend-java</code></td></tr>
+        <tr><td>No artists showing</td><td>Database may be empty. Run <code>docker compose down -v</code> then <code>docker compose up --build</code> to re-seed</td></tr>
+        <tr><td>Courses not showing</td><td>Run <code>docker compose restart backend-java</code> to trigger course seeding</td></tr>
+        <tr><td>Payment fails</td><td>Without Razorpay keys, mock mode auto-confirms. Add test keys from Razorpay dashboard for real flow.</td></tr>
+        <tr><td>View logs</td><td><code>docker compose logs -f</code> or <code>docker compose logs backend-java -f</code></td></tr>
+        <tr><td>Rebuild after code changes</td><td><code>docker compose up --build -d</code></td></tr>
+      </tbody>
+    </table>
+
+    <h3 class="sans">Useful commands</h3>
+    <pre><code># Check running containers
+docker compose ps
+
+# Restart a single service
+docker compose restart backend-java
+
+# Stop everything
+docker compose down
+
+# Fresh database (deletes all data)
+docker compose down -v &amp;&amp; docker compose up --build -d</code></pre>
+  </section>
+
+</main>
+
+<footer>
+  <p><strong>MakeupSeven</strong> · MyArtBusy · Proprietary © 2026</p>
+  <p style="margin-top:0.5rem;">
+    Repo: <a href="https://github.com/himanshujoshijiit/MyArtBusy" target="_blank">github.com/himanshujoshijiit/MyArtBusy</a>
+    &nbsp;·&nbsp; App: <a href="http://localhost:3000" target="_blank">localhost:3000</a>
+  </p>
+</footer>
+
+</body>
+</html>
