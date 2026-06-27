@@ -25,15 +25,25 @@ export default function SearchBar({ onSearch, loading }: Props) {
   const [nearMe, setNearMe] = useState(false);
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [occasions, setOccasions] = useState<{ value: string; label: string }[]>([]);
+  const [salonServices, setSalonServices] = useState<{ value: string; label: string }[]>([]);
+  const [salonService, setSalonService] = useState('');
 
   useEffect(() => {
     setLocaleState(getLocale());
-    fetch(`${process.env.NEXT_PUBLIC_SEARCH_URL || 'http://localhost:8000'}/api/search/occasions`)
+    const base = process.env.NEXT_PUBLIC_SEARCH_URL || 'http://localhost:8000';
+    fetch(`${base}/api/search/occasions`)
       .then(r => r.json())
       .then(setOccasions)
       .catch(() => setOccasions([
         { value: 'BRIDAL', label: 'Bridal' }, { value: 'PARTY', label: 'Party' },
-        { value: 'WEDDING', label: 'Wedding' }, { value: 'EDITORIAL', label: 'Editorial' },
+        { value: 'GLAMOROUS', label: 'Glamorous' }, { value: 'HALDI_MEHENDI', label: 'Haldi & Mehendi' },
+      ]));
+    fetch(`${base}/api/search/salon-services`)
+      .then(r => r.json())
+      .then(setSalonServices)
+      .catch(() => setSalonServices([
+        { value: 'threading', label: 'Threading' }, { value: 'waxing', label: 'Waxing' },
+        { value: 'facial', label: 'Facial' },
       ]));
   }, []);
 
@@ -54,6 +64,10 @@ export default function SearchBar({ onSearch, loading }: Props) {
     if (locality) params.locality = locality;
     if (pincode) params.pincode = pincode;
     if (occasion) params.occasion = occasion;
+    if (salonService) {
+      params.service_category = 'SALON';
+      params.salon_service = salonService;
+    }
     if (skinTone) params.skin_tone = skinTone;
     if (minBudget) params.min_budget = Number(minBudget);
     if (maxBudget) params.max_budget = Number(maxBudget);
@@ -107,6 +121,10 @@ export default function SearchBar({ onSearch, loading }: Props) {
         <div className="mt-3 grid gap-3 border-t border-charcoal/5 px-2 pt-3 sm:grid-cols-2 lg:grid-cols-3">
           <input type="text" placeholder={t('search.locality', locale)} value={locality} onChange={e => setLocality(e.target.value)} className="input-field !py-2" />
           <input type="text" placeholder={t('search.pincode', locale)} value={pincode} onChange={e => setPincode(e.target.value)} className="input-field !py-2" maxLength={6} />
+          <select value={salonService} onChange={e => setSalonService(e.target.value)} className="input-field !py-2">
+            <option value="">Salon add-ons (optional)</option>
+            {salonServices.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+          </select>
           <div className="flex items-center gap-2">
             <Palette className="h-4 w-4 shrink-0 text-charcoal/40" />
             <select value={skinTone} onChange={e => setSkinTone(e.target.value)} className="input-field !py-2">

@@ -100,7 +100,7 @@ export const api = {
     getByCity: (city: string) => apiFetch<MuaProfile[]>(`${API_URL}/api/muas/city/${city}`),
     updateProfile: (data: object) => apiFetch<MuaProfile>(`${API_URL}/api/muas/profile`, { method: 'PUT', body: JSON.stringify(data) }),
     addPortfolio: (data: object) => apiFetch<{ id: string; imageUrl: string; caption?: string; occasion?: string }>(`${API_URL}/api/muas/portfolio`, { method: 'POST', body: JSON.stringify(data) }),
-    addService: (data: object) => apiFetch<{ id: string; name: string; price: number; description?: string; durationMinutes?: number; occasion?: string }>(`${API_URL}/api/muas/services`, { method: 'POST', body: JSON.stringify(data) }),
+    addService: (data: object) => apiFetch<{ id: string; name: string; price: number; description?: string; durationMinutes?: number; occasion?: string; category?: string }>(`${API_URL}/api/muas/services`, { method: 'POST', body: JSON.stringify(data) }),
   },
   search: {
     query: (data: SearchParams) => searchFetch<SearchResponse>(`${SEARCH_URL}/api/search`, { method: 'POST', body: JSON.stringify(data) }),
@@ -223,7 +223,7 @@ export interface MuaProfile {
   longitude?: number;
   subscriptionTier: string;
   portfolio: { id: string; imageUrl: string; caption?: string; occasion?: string }[];
-  services: { id: string; name: string; description?: string; price: number; durationMinutes?: number; occasion?: string }[];
+  services: { id: string; name: string; description?: string; price: number; durationMinutes?: number; occasion?: string; category?: string }[];
 }
 
 export interface SearchParams {

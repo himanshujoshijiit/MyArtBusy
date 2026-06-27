@@ -5,8 +5,16 @@ import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 
-const OCCASIONS = ['BRIDAL', 'PARTY', 'WEDDING', 'EDITORIAL', 'ENGAGEMENT'];
+const OCCASIONS = [
+  'BRIDAL', 'WEDDING', 'PARTY', 'GLAMOROUS', 'HALDI_MEHENDI',
+  'EDITORIAL', 'FILM', 'PERSONAL_EVENT', 'ENGAGEMENT', 'RECEPTION',
+];
 const SKIN_TONES = ['FAIR', 'LIGHT', 'MEDIUM', 'OLIVE', 'TAN', 'DEEP', 'DARK', 'ALL'];
+const SALON_PRESETS = ['Threading', 'Waxing', 'Facial', 'Hair Styling'];
+
+function formatLabel(value: string) {
+  return value.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+}
 
 export default function OnboardingPage() {
   const { user } = useAuth();
@@ -28,6 +36,7 @@ export default function OnboardingPage() {
   const [portfolioUrl, setPortfolioUrl] = useState('');
   const [serviceName, setServiceName] = useState('Bridal Makeup');
   const [servicePrice, setServicePrice] = useState('');
+  const [serviceCategory, setServiceCategory] = useState<'MAKEUP' | 'SALON'>('MAKEUP');
 
   if (!user || user.role !== 'MUA') {
     return <div className="mx-auto max-w-lg px-4 py-16 text-center">MUA login required.</div>;
@@ -69,7 +78,12 @@ export default function OnboardingPage() {
 
   const addService = async () => {
     if (!servicePrice) return;
-    await api.muas.addService({ name: serviceName, price: Number(servicePrice), durationMinutes: 120 });
+    await api.muas.addService({
+      name: serviceName,
+      price: Number(servicePrice),
+      durationMinutes: serviceCategory === 'SALON' ? 45 : 120,
+      category: serviceCategory,
+    });
   };
 
   const goLive = () => router.push('/dashboard');
@@ -108,7 +122,7 @@ export default function OnboardingPage() {
             <div className="flex flex-wrap gap-2">
               {OCCASIONS.map(o => (
                 <button key={o} type="button" onClick={() => toggle(form.occasions, o, 'occasions')}
-                  className={`rounded-full px-3 py-1 text-xs ${form.occasions.includes(o) ? 'bg-rose-500 text-white' : 'bg-charcoal/5'}`}>{o}</button>
+                  className={`rounded-full px-3 py-1 text-xs ${form.occasions.includes(o) ? 'bg-rose-500 text-white' : 'bg-charcoal/5'}`}>{formatLabel(o)}</button>
               ))}
             </div>
           </div>
@@ -137,6 +151,16 @@ export default function OnboardingPage() {
           <div className="flex gap-2">
             <input className="input-field flex-1" placeholder="Portfolio image URL" value={portfolioUrl} onChange={e => setPortfolioUrl(e.target.value)} />
             <button type="button" className="btn-secondary" onClick={addPortfolio}>Add</button>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <select className="input-field !py-2" value={serviceCategory} onChange={e => setServiceCategory(e.target.value as 'MAKEUP' | 'SALON')}>
+              <option value="MAKEUP">Makeup service</option>
+              <option value="SALON">Salon add-on</option>
+            </select>
+            {serviceCategory === 'SALON' && SALON_PRESETS.map(p => (
+              <button key={p} type="button" className="rounded-full bg-charcoal/5 px-3 py-1 text-xs"
+                onClick={() => setServiceName(p)}>{p}</button>
+            ))}
           </div>
           <div className="flex gap-2">
             <input className="input-field" placeholder="Service name" value={serviceName} onChange={e => setServiceName(e.target.value)} />

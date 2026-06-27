@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { api } from '@/lib/api';
+import { api, formatOccasion } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 
 export default function QuotePage() {
@@ -12,10 +12,21 @@ export default function QuotePage() {
   const [details, setDetails] = useState('');
   const [eventDate, setEventDate] = useState('');
   const [occasion, setOccasion] = useState('BRIDAL');
+  const [occasions, setOccasions] = useState<{ value: string; label: string }[]>([]);
   const [budgetMin, setBudgetMin] = useState('');
   const [budgetMax, setBudgetMax] = useState('');
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
+
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_SEARCH_URL || 'http://localhost:8000'}/api/search/occasions`)
+      .then(r => r.json())
+      .then(setOccasions)
+      .catch(() => setOccasions([
+        { value: 'BRIDAL', label: 'Bridal' }, { value: 'HALDI_MEHENDI', label: 'Haldi & Mehendi' },
+        { value: 'GLAMOROUS', label: 'Glamorous' }, { value: 'PARTY', label: 'Party' },
+      ]));
+  }, []);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,8 +64,8 @@ export default function QuotePage() {
       <p className="mt-2 text-sm text-charcoal/60">Perfect for bridal packages, multi-day events, or custom looks.</p>
       <form onSubmit={submit} className="card mt-8 space-y-4 p-6">
         <select className="input-field" value={occasion} onChange={e => setOccasion(e.target.value)}>
-          {['BRIDAL', 'WEDDING', 'PARTY', 'ENGAGEMENT', 'RECEPTION'].map(o => (
-            <option key={o} value={o}>{o.replace('_', ' ')}</option>
+          {(occasions.length ? occasions : [{ value: 'BRIDAL', label: 'Bridal' }]).map(o => (
+            <option key={o.value} value={o.value}>{o.label || formatOccasion(o.value)}</option>
           ))}
         </select>
         <input type="date" className="input-field" value={eventDate} onChange={e => setEventDate(e.target.value)} />

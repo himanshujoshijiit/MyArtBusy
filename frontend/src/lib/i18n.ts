@@ -63,5 +63,6 @@ export function getLocale(): Locale {
 }
 
 export function setLocale(locale: Locale) {
+  if (typeof window === 'undefined') return;
   localStorage.setItem('locale', locale);
 }

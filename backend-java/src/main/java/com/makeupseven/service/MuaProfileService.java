@@ -86,6 +86,7 @@ public class MuaProfileService {
                 .price(dto.getPrice())
                 .durationMinutes(dto.getDurationMinutes())
                 .occasion(dto.getOccasion())
+                .category(dto.getCategory() != null ? dto.getCategory() : com.makeupseven.model.enums.ServiceCategory.MAKEUP)
                 .build();
         profile.getServices().add(service);
         muaProfileRepository.save(profile);
@@ -163,6 +164,7 @@ public class MuaProfileService {
                 .price(s.getPrice())
                 .durationMinutes(s.getDurationMinutes())
                 .occasion(s.getOccasion())
+                .category(s.getCategory())
                 .build();
     }
 }

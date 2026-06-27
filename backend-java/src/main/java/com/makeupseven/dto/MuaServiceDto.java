@@ -1,6 +1,7 @@
 package com.makeupseven.dto;
 
 import com.makeupseven.model.enums.Occasion;
+import com.makeupseven.model.enums.ServiceCategory;
 import lombok.Builder;
 import lombok.Data;
 
@@ -16,4 +17,5 @@ public class MuaServiceDto {
     private BigDecimal price;
     private Integer durationMinutes;
     private Occasion occasion;
+    private ServiceCategory category;
 }

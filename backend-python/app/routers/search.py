@@ -120,6 +120,21 @@ def search_muas(req: SearchRequest, db: Session = Depends(get_db)):
         """
         params["occasion"] = req.occasion
 
+    service_filter = ""
+    if req.service_category or req.salon_service:
+        service_filter = """
+            AND EXISTS (
+                SELECT 1 FROM mua_services ms
+                WHERE ms.mua_id = m.id AND ms.active = true
+        """
+        if req.service_category:
+            service_filter += " AND UPPER(ms.category) = UPPER(:service_category)"
+            params["service_category"] = req.service_category
+        if req.salon_service:
+            service_filter += " AND LOWER(ms.name) LIKE LOWER(:salon_service)"
+            params["salon_service"] = f"%{req.salon_service}%"
+        service_filter += ")"
+
     skin_filter = ""
     if req.skin_tone:
         skin_filter = """
@@ -160,7 +175,7 @@ def search_muas(req: SearchRequest, db: Session = Depends(get_db)):
 
     count_sql = f"""
         SELECT COUNT(*) FROM mua_profiles m
-        WHERE {where} {occasion_filter} {skin_filter} {availability_filter}
+        WHERE {where} {occasion_filter} {service_filter} {skin_filter} {availability_filter}
     """
     total = db.execute(text(count_sql), params).scalar() or 0
 
@@ -170,7 +185,7 @@ def search_muas(req: SearchRequest, db: Session = Depends(get_db)):
                m.min_price, m.max_price, m.rating, m.review_count, m.total_bookings,
                m.top_artist, m.verified, m.featured, m.response_time_minutes
         FROM mua_profiles m
-        WHERE {where} {occasion_filter} {skin_filter} {availability_filter}
+        WHERE {where} {occasion_filter} {service_filter} {skin_filter} {availability_filter}
         ORDER BY {order}
         LIMIT :limit OFFSET :offset
     """
@@ -238,6 +253,8 @@ def search_muas(req: SearchRequest, db: Session = Depends(get_db)):
         parts.append(f"PIN {req.pincode}")
     if req.occasion:
         parts.append(req.occasion.replace("_", " ").title())
+    if req.salon_service:
+        parts.append(req.salon_service.title())
     if req.latitude is not None:
         parts.append("Near me")
     summary = " · ".join(parts) if parts else "All artists"
@@ -266,6 +283,16 @@ def list_cities(db: Session = Depends(get_db)):
         text("SELECT DISTINCT city, country FROM mua_profiles WHERE active = true ORDER BY city")
     ).fetchall()
     return [{"city": r[0], "country": r[1]} for r in rows]
+
+
+@router.get("/salon-services")
+def list_salon_services():
+    return [
+        {"value": "threading", "label": "Threading"},
+        {"value": "waxing", "label": "Waxing"},
+        {"value": "facial", "label": "Facial"},
+        {"value": "hair styling", "label": "Hair Styling"},
+    ]
 
 
 @router.get("/occasions")

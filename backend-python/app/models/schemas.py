@@ -7,6 +7,8 @@ class SearchRequest(BaseModel):
     locality: Optional[str] = None
     pincode: Optional[str] = None
     occasion: Optional[str] = None
+    service_category: Optional[str] = None
+    salon_service: Optional[str] = None
     skin_tone: Optional[str] = None
     min_budget: Optional[float] = None
     max_budget: Optional[float] = None
