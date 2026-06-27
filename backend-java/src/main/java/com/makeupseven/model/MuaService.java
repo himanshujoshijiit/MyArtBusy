@@ -1,6 +1,7 @@
 package com.makeupseven.model;
 
 import com.makeupseven.model.enums.Occasion;
+import com.makeupseven.model.enums.ServiceCategory;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -36,6 +37,10 @@ public class MuaService {
 
     @Enumerated(EnumType.STRING)
     private Occasion occasion;
+
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private ServiceCategory category = ServiceCategory.MAKEUP;
 
     @Builder.Default
     private Boolean active = true;

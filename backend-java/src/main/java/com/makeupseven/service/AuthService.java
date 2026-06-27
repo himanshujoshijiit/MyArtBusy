@@ -108,10 +108,8 @@ public class AuthService {
         otp.setUsed(true);
         otpCodeRepository.save(otp);
 
-        User user = userRepository.findAll().stream()
-                .filter(u -> request.getPhone().equals(u.getPhone()))
-                .findFirst()
-                .orElseGet(() -> userRepository.save(User.builder()
+        User user = userRepository.findByPhone(request.getPhone()).orElseGet(() ->
+                userRepository.save(User.builder()
                         .email(request.getPhone() + "@phone.makeupseven.com")
                         .passwordHash(passwordEncoder.encode(UUID.randomUUID().toString()))
                         .fullName(request.getFullName() != null ? request.getFullName() : "Client")

@@ -16,7 +16,9 @@ import java.time.LocalTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "bookings")
+@Table(name = "bookings", indexes = {
+        @Index(name = "idx_bookings_razorpay_order", columnList = "razorpayOrderId")
+})
 @Getter
 @Setter
 @NoArgsConstructor

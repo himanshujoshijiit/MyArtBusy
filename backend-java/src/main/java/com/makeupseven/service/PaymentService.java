@@ -9,6 +9,7 @@ import com.razorpay.RazorpayClient;
 import com.razorpay.RazorpayException;
 import com.razorpay.Utils;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
@@ -20,6 +21,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PaymentService {
 
     private final BookingRepository bookingRepository;
@@ -35,6 +37,9 @@ public class PaymentService {
 
     @Value("${makeupseven.razorpay.key-secret:}")
     private String razorpayKeySecret;
+
+    @Value("${makeupseven.razorpay.webhook-secret:}")
+    private String webhookSecret;
 
     public Map<String, Object> createDepositOrder(UUID bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
@@ -76,10 +81,13 @@ public class PaymentService {
 
     @Transactional
     public void verifyPayment(String orderId, String paymentId, String signature) {
-        Booking booking = bookingRepository.findAll().stream()
-                .filter(b -> orderId.equals(b.getRazorpayOrderId()))
-                .findFirst()
+        Booking booking = bookingRepository.findByRazorpayOrderId(orderId)
                 .orElseThrow(() -> new RuntimeException("Booking not found for order"));
+
+        if (booking.getPaymentStatus() == PaymentStatus.DEPOSIT_PAID) {
+            log.info("Payment already verified for order {}", orderId);
+            return;
+        }
 
         if (razorpayKeyId != null && !razorpayKeyId.isBlank() && signature != null && !signature.equals("mock")) {
             try {
@@ -95,28 +103,49 @@ public class PaymentService {
             }
         }
 
+        completeDepositPayment(booking, paymentId);
+    }
+
+    @Transactional
+    public void handleWebhook(String rawBody, String signature) {
+        if (razorpayKeyId != null && !razorpayKeyId.isBlank()) {
+            if (webhookSecret == null || webhookSecret.isBlank()) {
+                throw new RuntimeException("Webhook secret not configured");
+            }
+            try {
+                if (!Utils.verifyWebhookSignature(rawBody, signature, webhookSecret)) {
+                    throw new RuntimeException("Invalid webhook signature");
+                }
+            } catch (Exception e) {
+                throw new RuntimeException("Webhook verification failed: " + e.getMessage());
+            }
+        }
+
+        JSONObject payload = new JSONObject(rawBody);
+        if (!payload.has("payload")) return;
+
+        JSONObject eventPayload = payload.getJSONObject("payload");
+        if (!eventPayload.has("payment")) return;
+
+        JSONObject payment = eventPayload.getJSONObject("payment").getJSONObject("entity");
+        String orderId = payment.getString("order_id");
+        String paymentId = payment.getString("id");
+
+        Booking booking = bookingRepository.findByRazorpayOrderId(orderId)
+                .orElseThrow(() -> new RuntimeException("Booking not found for webhook order"));
+
+        if (booking.getPaymentStatus() != PaymentStatus.DEPOSIT_PAID) {
+            completeDepositPayment(booking, paymentId);
+        }
+    }
+
+    private void completeDepositPayment(Booking booking, String paymentId) {
         booking.setRazorpayPaymentId(paymentId);
         booking.setPaymentStatus(PaymentStatus.DEPOSIT_PAID);
         booking.setStatus(BookingStatus.DEPOSIT_PAID);
         booking.setContractUrl(contractService.contractUrlFor(booking));
         bookingRepository.save(booking);
-
         bookingService.markSlotBookedOnPayment(booking);
         notificationClient.sendBookingConfirmation(booking);
-    }
-
-    @Transactional
-    public void handleWebhook(Map<String, Object> payload) {
-        if (payload.containsKey("payload")) {
-            @SuppressWarnings("unchecked")
-            Map<String, Object> paymentEntity = (Map<String, Object>) payload.get("payload");
-            if (paymentEntity != null && paymentEntity.containsKey("payment")) {
-                @SuppressWarnings("unchecked")
-                Map<String, Object> payment = (Map<String, Object>) ((Map<String, Object>) paymentEntity.get("payment")).get("entity");
-                String orderId = (String) payment.get("order_id");
-                String paymentId = (String) payment.get("id");
-                verifyPayment(orderId, paymentId, null);
-            }
-        }
     }
 }

@@ -1,9 +1,12 @@
 package com.makeupseven.controller;
 
 import com.makeupseven.service.PaymentService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.UUID;
 
@@ -26,8 +29,10 @@ public class PaymentController {
     }
 
     @PostMapping("/webhook")
-    public Map<String, String> webhook(@RequestBody Map<String, Object> payload) {
-        paymentService.handleWebhook(payload);
+    public Map<String, String> webhook(HttpServletRequest request,
+                                       @RequestHeader(value = "X-Razorpay-Signature", required = false) String signature) throws Exception {
+        String rawBody = StreamUtils.copyToString(request.getInputStream(), StandardCharsets.UTF_8);
+        paymentService.handleWebhook(rawBody, signature != null ? signature : "");
         return Map.of("status", "ok");
     }
 }

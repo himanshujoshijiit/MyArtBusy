@@ -8,9 +8,12 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface BookingRepository extends JpaRepository<Booking, UUID> {
+    Optional<Booking> findByRazorpayOrderId(String razorpayOrderId);
+
     List<Booking> findByClientIdOrderByCreatedAtDesc(UUID clientId);
     List<Booking> findByMuaProfileIdOrderByBookingDateDesc(UUID muaId);
 

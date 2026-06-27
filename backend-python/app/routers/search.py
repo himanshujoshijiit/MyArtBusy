@@ -47,6 +47,43 @@ def compute_relevance(row: dict, req: SearchRequest) -> float:
     return round(score, 2)
 
 
+def _batch_load_relations(db: Session, mua_ids: list[str]):
+    """Load occasions, skin tones, portfolio in 3 queries instead of N*3."""
+    from collections import defaultdict
+
+    if not mua_ids:
+        return {}, {}, {}
+
+    occasions_map: dict[str, list] = defaultdict(list)
+    for row in db.execute(
+        text("SELECT mua_id::text, occasion FROM mua_occasions WHERE mua_id::text = ANY(:ids)"),
+        {"ids": mua_ids},
+    ):
+        occasions_map[row[0]].append(row[1])
+
+    skin_map: dict[str, list] = defaultdict(list)
+    for row in db.execute(
+        text("SELECT mua_id::text, skin_tone FROM mua_skin_tones WHERE mua_id::text = ANY(:ids)"),
+        {"ids": mua_ids},
+    ):
+        skin_map[row[0]].append(row[1])
+
+    portfolio_map: dict[str, list] = defaultdict(list)
+    for row in db.execute(
+        text("""
+            SELECT mua_id::text, image_url FROM (
+                SELECT mua_id, image_url,
+                       ROW_NUMBER() OVER (PARTITION BY mua_id ORDER BY sort_order) AS rn
+                FROM portfolio_items WHERE mua_id::text = ANY(:ids)
+            ) sub WHERE rn <= 4
+        """),
+        {"ids": mua_ids},
+    ):
+        portfolio_map[row[0]].append(row[1])
+
+    return dict(occasions_map), dict(skin_map), dict(portfolio_map)
+
+
 @router.post("", response_model=SearchResponse)
 def search_muas(req: SearchRequest, db: Session = Depends(get_db)):
     conditions = ["m.active = true"]
@@ -141,27 +178,27 @@ def search_muas(req: SearchRequest, db: Session = Depends(get_db)):
     params["offset"] = offset
 
     rows = db.execute(text(sql), params).mappings().all()
-    results = []
 
+    # Filter by distance before batch-loading relations
+    filtered_rows = []
     for row in rows:
-        mua_id = str(row["id"])
-        distance_km = None
         if req.latitude is not None and req.longitude is not None and row.get("latitude") and row.get("longitude"):
-            distance_km = round(haversine_km(req.latitude, req.longitude, float(row["latitude"]), float(row["longitude"])), 1)
-            if distance_km > req.radius_km:
+            dist = haversine_km(req.latitude, req.longitude, float(row["latitude"]), float(row["longitude"]))
+            if dist > req.radius_km:
                 continue
+            row = {**dict(row), "_distance_km": round(dist, 1)}
+        filtered_rows.append(row)
 
-        occasions = [r[0] for r in db.execute(
-            text("SELECT occasion FROM mua_occasions WHERE mua_id = :id"), {"id": mua_id}
-        ).fetchall()]
-        skin_tones = [r[0] for r in db.execute(
-            text("SELECT skin_tone FROM mua_skin_tones WHERE mua_id = :id"), {"id": mua_id}
-        ).fetchall()]
-        portfolio = [r[0] for r in db.execute(
-            text("SELECT image_url FROM portfolio_items WHERE mua_id = :id ORDER BY sort_order LIMIT 4"),
-            {"id": mua_id},
-        ).fetchall()]
+    mua_ids = [str(r["id"]) for r in filtered_rows]
+    occasions_map, skin_map, portfolio_map = _batch_load_relations(db, mua_ids)
 
+    results = []
+    for row in filtered_rows:
+        mua_id = str(row["id"])
+        distance_km = row.get("_distance_km")
+        occasions = occasions_map.get(mua_id, [])
+        skin_tones = skin_map.get(mua_id, [])
+        portfolio = portfolio_map.get(mua_id, [])
         row_dict = {**dict(row), "occasions": occasions, "skin_tones": skin_tones, "distance_km": distance_km}
         results.append(MuaSearchResult(
             id=mua_id,
@@ -237,6 +274,8 @@ def list_occasions():
         {"value": "BRIDAL", "label": "Bridal"},
         {"value": "WEDDING", "label": "Wedding"},
         {"value": "PARTY", "label": "Party"},
+        {"value": "GLAMOROUS", "label": "Glamorous"},
+        {"value": "HALDI_MEHENDI", "label": "Haldi & Mehendi"},
         {"value": "EDITORIAL", "label": "Editorial"},
         {"value": "FILM", "label": "Film & TV"},
         {"value": "PERSONAL_EVENT", "label": "Personal Event"},

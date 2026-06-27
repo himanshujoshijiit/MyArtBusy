@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Search, MapPin, Palette, Star, Calendar, Navigation } from 'lucide-react';
-import { t, getLocale } from '@/lib/i18n';
+import { t, getLocale, type Locale } from '@/lib/i18n';
 
 interface Props {
   onSearch: (params: Record<string, string | number | boolean>) => void;
@@ -10,7 +10,7 @@ interface Props {
 }
 
 export default function SearchBar({ onSearch, loading }: Props) {
-  const locale = getLocale();
+  const [locale, setLocaleState] = useState<Locale>('en');
   const [city, setCity] = useState('Bengaluru');
   const [locality, setLocality] = useState('');
   const [pincode, setPincode] = useState('');
@@ -27,6 +27,7 @@ export default function SearchBar({ onSearch, loading }: Props) {
   const [occasions, setOccasions] = useState<{ value: string; label: string }[]>([]);
 
   useEffect(() => {
+    setLocaleState(getLocale());
     fetch(`${process.env.NEXT_PUBLIC_SEARCH_URL || 'http://localhost:8000'}/api/search/occasions`)
       .then(r => r.json())
       .then(setOccasions)
