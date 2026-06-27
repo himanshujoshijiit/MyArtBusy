@@ -1,6 +1,42 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 const SEARCH_URL = process.env.NEXT_PUBLIC_SEARCH_URL || 'http://localhost:8000';
 
+async function searchFetch<T>(url: string, options: RequestInit = {}): Promise<T> {
+  try {
+    return await apiFetch<T>(url, options);
+  } catch {
+    // Fallback: if Python search is down, use Java MUA list
+    if (url.includes(SEARCH_URL)) {
+      const muas = await apiFetch<MuaProfile[]>(`${API_URL}/api/muas`);
+      return {
+        results: muas.map(m => ({
+          id: m.id,
+          display_name: m.displayName,
+          bio: m.bio,
+          city: m.city,
+          locality: m.locality,
+          occasions: m.occasions,
+          skin_tone_expertise: m.skinToneExpertise,
+          min_price: m.minPrice,
+          max_price: m.maxPrice,
+          rating: m.rating,
+          review_count: m.reviewCount,
+          total_bookings: m.totalBookings,
+          top_artist: m.topArtist,
+          verified: m.verified,
+          featured: m.featured,
+          response_time_label: m.responseTimeLabel || '',
+          portfolio_preview: m.portfolio?.map(p => p.imageUrl) || [],
+          relevance_score: m.rating * 20,
+        })),
+        total: muas.length,
+        query_summary: 'All artists (fallback)',
+      } as T;
+    }
+    throw new Error('Service unavailable');
+  }
+}
+
 export function getToken(): string | null {
   if (typeof window === 'undefined') return null;
   return localStorage.getItem('token');
@@ -48,8 +84,13 @@ async function apiFetch<T>(url: string, options: RequestInit = {}): Promise<T> {
 
 export const api = {
   auth: {
-    register: (data: object) => apiFetch<AuthUser & { token: string }>(`${API_URL}/api/auth/register`, { method: 'POST', body: JSON.stringify(data) }),
-    login: (data: object) => apiFetch<AuthUser & { token: string }>(`${API_URL}/api/auth/login`, { method: 'POST', body: JSON.stringify(data) }),
+    register: (data: object) => apiFetch<AuthUser & { token: string; refreshToken?: string }>(`${API_URL}/api/auth/register`, { method: 'POST', body: JSON.stringify(data) }),
+    login: (data: object) => apiFetch<AuthUser & { token: string; refreshToken?: string }>(`${API_URL}/api/auth/login`, { method: 'POST', body: JSON.stringify(data) }),
+    refresh: (refreshToken: string) => apiFetch<AuthUser & { token: string }>(`${API_URL}/api/auth/refresh`, { method: 'POST', body: JSON.stringify({ refreshToken }) }),
+    sendOtp: (phone: string) => apiFetch<{ message: string }>(`${API_URL}/api/auth/otp/send`, { method: 'POST', body: JSON.stringify({ phone }) }),
+    verifyOtp: (data: object) => apiFetch<AuthUser & { token: string }>(`${API_URL}/api/auth/otp/verify`, { method: 'POST', body: JSON.stringify(data) }),
+    google: (data: object) => apiFetch<AuthUser & { token: string }>(`${API_URL}/api/auth/google`, { method: 'POST', body: JSON.stringify(data) }),
+    completeOnboarding: (data: object) => apiFetch<MuaProfile>(`${API_URL}/api/auth/onboarding`, { method: 'POST', body: JSON.stringify(data) }),
   },
   muas: {
     getAll: () => apiFetch<MuaProfile[]>(`${API_URL}/api/muas`),
@@ -62,9 +103,10 @@ export const api = {
     addService: (data: object) => apiFetch<{ id: string; name: string; price: number; description?: string; durationMinutes?: number; occasion?: string }>(`${API_URL}/api/muas/services`, { method: 'POST', body: JSON.stringify(data) }),
   },
   search: {
-    query: (data: SearchParams) => apiFetch<SearchResponse>(`${SEARCH_URL}/api/search`, { method: 'POST', body: JSON.stringify(data) }),
+    query: (data: SearchParams) => searchFetch<SearchResponse>(`${SEARCH_URL}/api/search`, { method: 'POST', body: JSON.stringify(data) }),
     occasions: () => apiFetch<{ value: string; label: string }[]>(`${SEARCH_URL}/api/search/occasions`),
     cities: () => apiFetch<{ city: string; country: string }[]>(`${SEARCH_URL}/api/search/cities`),
+    localities: (city: string) => apiFetch<{ locality: string; pincode: string }[]>(`${SEARCH_URL}/api/search/localities/${encodeURIComponent(city)}`),
   },
   bookings: {
     create: (data: object) => apiFetch<Booking>(`${API_URL}/api/bookings`, { method: 'POST', body: JSON.stringify(data) }),
@@ -107,6 +149,53 @@ export const api = {
     kit: () => apiFetch<KitItem[]>(`${API_URL}/api/dashboard/kit`),
     addKit: (data: object) => apiFetch<KitItem>(`${API_URL}/api/dashboard/kit`, { method: 'POST', body: JSON.stringify(data) }),
   },
+  quotes: {
+    create: (data: object) => apiFetch<QuoteRequest>(`${API_URL}/api/quotes`, { method: 'POST', body: JSON.stringify(data) }),
+    my: () => apiFetch<QuoteRequest[]>(`${API_URL}/api/quotes/my`),
+    mua: () => apiFetch<QuoteRequest[]>(`${API_URL}/api/quotes/mua`),
+    respond: (id: string, data: object) => apiFetch<QuoteRequest>(`${API_URL}/api/quotes/${id}/respond`, { method: 'POST', body: JSON.stringify(data) }),
+  },
+  referrals: {
+    my: () => apiFetch<ReferralInfo>(`${API_URL}/api/referrals/my`),
+    apply: (code: string) => apiFetch<ReferralInfo>(`${API_URL}/api/referrals/apply`, { method: 'POST', body: JSON.stringify({ code }) }),
+  },
+  blockedDates: {
+    list: () => apiFetch<BlockedDate[]>(`${API_URL}/api/blocked-dates`),
+    add: (data: object) => apiFetch<BlockedDate>(`${API_URL}/api/blocked-dates`, { method: 'POST', body: JSON.stringify(data) }),
+    remove: (date: string) => apiFetch<void>(`${API_URL}/api/blocked-dates/${date}`, { method: 'DELETE' }),
+  },
+  upload: {
+    image: async (file: File) => {
+      const token = getToken();
+      const form = new FormData();
+      form.append('file', file);
+      const res = await fetch(`${API_URL}/api/upload/image`, {
+        method: 'POST',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: form,
+      });
+      if (!res.ok) throw new Error('Upload failed');
+      return res.json() as Promise<{ url: string }>;
+    },
+  },
+  admin: {
+    stats: () => apiFetch<AdminStats>(`${API_URL}/api/admin/stats`),
+    muas: () => apiFetch<AdminMua[]>(`${API_URL}/api/admin/muas`),
+    verifyMua: (id: string) => apiFetch<void>(`${API_URL}/api/admin/muas/${id}/verify`, { method: 'POST' }),
+    featureMua: (id: string, featured: boolean) => apiFetch<void>(`${API_URL}/api/admin/muas/${id}/feature?featured=${featured}`, { method: 'POST' }),
+  },
+  health: {
+    check: async () => {
+      const [java, python] = await Promise.allSettled([
+        fetch(`${API_URL}/actuator/health`),
+        fetch(`${SEARCH_URL}/health`),
+      ]);
+      return {
+        java: java.status === 'fulfilled' && java.value.ok,
+        python: python.status === 'fulfilled' && python.value.ok,
+      };
+    },
+  },
 };
 
 export interface MuaProfile {
@@ -128,6 +217,10 @@ export interface MuaProfile {
   verified: boolean;
   featured: boolean;
   responseTimeLabel?: string;
+  onboardingComplete?: boolean;
+  pincode?: string;
+  latitude?: number;
+  longitude?: number;
   subscriptionTier: string;
   portfolio: { id: string; imageUrl: string; caption?: string; occasion?: string }[];
   services: { id: string; name: string; description?: string; price: number; durationMinutes?: number; occasion?: string }[];
@@ -143,6 +236,10 @@ export interface SearchParams {
   min_rating?: number;
   available_date?: string;
   top_artist_only?: boolean;
+  pincode?: string;
+  latitude?: number;
+  longitude?: number;
+  radius_km?: number;
   sort_by?: string;
   page?: number;
 }
@@ -166,6 +263,8 @@ export interface SearchResult {
   response_time_label: string;
   portfolio_preview: string[];
   relevance_score: number;
+  distance_km?: number;
+  pincode?: string;
 }
 
 export interface SearchResponse {
@@ -191,6 +290,8 @@ export interface Booking {
   depositAmount: number;
   commissionAmount?: number;
   remainingAmount?: number;
+  bookingType?: string;
+  refundAmount?: number;
   status: string;
   paymentStatus: string;
   razorpayOrderId?: string;
@@ -286,6 +387,50 @@ export interface KitItem {
   quantity: number;
   expiryDate?: string;
   lowStockAlert: boolean;
+}
+
+export interface BlockedDate {
+  id: string;
+  blockDate: string;
+  reason?: string;
+}
+
+export interface QuoteRequest {
+  id: string;
+  clientName: string;
+  muaName: string;
+  occasion?: string;
+  eventDate?: string;
+  details?: string;
+  budgetMin?: number;
+  budgetMax?: number;
+  status: string;
+  quotedAmount?: number;
+  muaResponse?: string;
+}
+
+export interface ReferralInfo {
+  referralCode: string;
+  creditAmount: number;
+  totalReferrals: number;
+}
+
+export interface AdminStats {
+  totalUsers: number;
+  totalMuas: number;
+  pendingVerification: number;
+  totalBookings: number;
+  totalRevenue: number;
+  activeBookings: number;
+  pendingMuas: AdminMua[];
+}
+
+export interface AdminMua {
+  id: string;
+  displayName: string;
+  email: string;
+  city: string;
+  onboardingComplete: boolean;
 }
 
 export function formatPrice(amount?: number): string {

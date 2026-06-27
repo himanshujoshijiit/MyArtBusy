@@ -30,6 +30,19 @@ public class JwtTokenProvider {
                 .subject(userId.toString())
                 .claim("email", email)
                 .claim("role", role)
+                .claim("type", "access")
+                .issuedAt(now)
+                .expiration(expiry)
+                .signWith(key)
+                .compact();
+    }
+
+    public String generateRefreshToken(UUID userId) {
+        Date now = new Date();
+        Date expiry = new Date(now.getTime() + expirationMs * 7);
+        return Jwts.builder()
+                .subject(userId.toString())
+                .claim("type", "refresh")
                 .issuedAt(now)
                 .expiration(expiry)
                 .signWith(key)

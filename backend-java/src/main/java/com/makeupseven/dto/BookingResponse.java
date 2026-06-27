@@ -1,6 +1,7 @@
 package com.makeupseven.dto;
 
 import com.makeupseven.model.enums.BookingStatus;
+import com.makeupseven.model.enums.BookingType;
 import com.makeupseven.model.enums.Occasion;
 import com.makeupseven.model.enums.PaymentStatus;
 import lombok.Builder;
@@ -26,11 +27,13 @@ public class BookingResponse {
     private LocalTime startTime;
     private LocalTime endTime;
     private Occasion occasion;
+    private BookingType bookingType;
     private String notes;
     private BigDecimal totalAmount;
     private BigDecimal depositAmount;
     private BigDecimal commissionAmount;
     private BigDecimal remainingAmount;
+    private BigDecimal refundAmount;
     private BookingStatus status;
     private PaymentStatus paymentStatus;
     private String razorpayOrderId;

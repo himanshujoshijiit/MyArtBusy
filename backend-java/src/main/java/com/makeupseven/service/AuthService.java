@@ -10,6 +10,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.SecureRandom;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 @Service
@@ -20,6 +23,9 @@ public class AuthService {
     private final MuaProfileRepository muaProfileRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider tokenProvider;
+    private final RefreshTokenRepository refreshTokenRepository;
+    private final OtpCodeRepository otpCodeRepository;
+    private final MuaProfileService muaProfileService;
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
@@ -42,20 +48,13 @@ public class AuthService {
                     .displayName(request.getFullName())
                     .city("Bengaluru")
                     .country("India")
+                    .onboardingComplete(false)
                     .build();
             profile = muaProfileRepository.save(profile);
             muaProfileId = profile.getId();
         }
 
-        String token = tokenProvider.generateToken(user.getId(), user.getEmail(), user.getRole().name());
-        return AuthResponse.builder()
-                .token(token)
-                .userId(user.getId())
-                .email(user.getEmail())
-                .fullName(user.getFullName())
-                .role(user.getRole())
-                .muaProfileId(muaProfileId)
-                .build();
+        return buildAuthResponse(user, muaProfileId);
     }
 
     public AuthResponse login(LoginRequest request) {
@@ -66,9 +65,111 @@ public class AuthService {
         }
         UUID muaProfileId = muaProfileRepository.findByUserId(user.getId())
                 .map(MuaProfile::getId).orElse(null);
-        String token = tokenProvider.generateToken(user.getId(), user.getEmail(), user.getRole().name());
+        return buildAuthResponse(user, muaProfileId);
+    }
+
+    @Transactional
+    public AuthResponse refreshToken(String refreshTokenValue) {
+        RefreshToken stored = refreshTokenRepository.findByTokenAndRevokedFalse(refreshTokenValue)
+                .orElseThrow(() -> new RuntimeException("Invalid refresh token"));
+        if (stored.getExpiresAt().isBefore(Instant.now())) {
+            throw new RuntimeException("Refresh token expired");
+        }
+        User user = stored.getUser();
+        UUID muaProfileId = muaProfileRepository.findByUserId(user.getId())
+                .map(MuaProfile::getId).orElse(null);
+        stored.setRevoked(true);
+        refreshTokenRepository.save(stored);
+        return buildAuthResponse(user, muaProfileId);
+    }
+
+    @Transactional
+    public void sendOtp(OtpRequest request) {
+        String code = String.format("%06d", new SecureRandom().nextInt(999999));
+        otpCodeRepository.save(OtpCode.builder()
+                .phone(request.getPhone())
+                .code(code)
+                .expiresAt(Instant.now().plus(10, ChronoUnit.MINUTES))
+                .build());
+        // In production: send via SMS/WhatsApp. Log for demo.
+        System.out.println("[OTP] Phone " + request.getPhone() + " code: " + code);
+    }
+
+    @Transactional
+    public AuthResponse verifyOtp(OtpVerifyRequest request) {
+        OtpCode otp = otpCodeRepository.findTopByPhoneAndUsedFalseOrderByCreatedAtDesc(request.getPhone())
+                .orElseThrow(() -> new RuntimeException("No OTP found"));
+        if (otp.getExpiresAt().isBefore(Instant.now())) {
+            throw new RuntimeException("OTP expired");
+        }
+        if (!otp.getCode().equals(request.getCode())) {
+            throw new RuntimeException("Invalid OTP");
+        }
+        otp.setUsed(true);
+        otpCodeRepository.save(otp);
+
+        User user = userRepository.findAll().stream()
+                .filter(u -> request.getPhone().equals(u.getPhone()))
+                .findFirst()
+                .orElseGet(() -> userRepository.save(User.builder()
+                        .email(request.getPhone() + "@phone.makeupseven.com")
+                        .passwordHash(passwordEncoder.encode(UUID.randomUUID().toString()))
+                        .fullName(request.getFullName() != null ? request.getFullName() : "Client")
+                        .phone(request.getPhone())
+                        .role(UserRole.CLIENT)
+                        .build()));
+
+        UUID muaProfileId = muaProfileRepository.findByUserId(user.getId())
+                .map(MuaProfile::getId).orElse(null);
+        return buildAuthResponse(user, muaProfileId);
+    }
+
+    @Transactional
+    public AuthResponse googleAuth(GoogleAuthRequest request) {
+        User user = userRepository.findByEmail(request.getEmail()).orElseGet(() ->
+                userRepository.save(User.builder()
+                        .email(request.getEmail())
+                        .passwordHash(passwordEncoder.encode(UUID.randomUUID().toString()))
+                        .fullName(request.getFullName())
+                        .role(UserRole.CLIENT)
+                        .build()));
+        UUID muaProfileId = muaProfileRepository.findByUserId(user.getId())
+                .map(MuaProfile::getId).orElse(null);
+        return buildAuthResponse(user, muaProfileId);
+    }
+
+    @Transactional
+    public MuaProfileResponse completeOnboarding(UUID userId, MuaProfileRequest request) {
+        MuaProfile profile = muaProfileRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("MUA profile not found"));
+        profile.setDisplayName(request.getDisplayName());
+        profile.setBio(request.getBio());
+        profile.setCity(request.getCity());
+        profile.setLocality(request.getLocality());
+        if (request.getPincode() != null) profile.setPincode(request.getPincode());
+        if (request.getLatitude() != null) profile.setLatitude(request.getLatitude());
+        if (request.getLongitude() != null) profile.setLongitude(request.getLongitude());
+        if (request.getOccasions() != null) profile.setOccasions(request.getOccasions());
+        if (request.getSkinToneExpertise() != null) profile.setSkinToneExpertise(request.getSkinToneExpertise());
+        if (request.getMinPrice() != null) profile.setMinPrice(request.getMinPrice());
+        if (request.getMaxPrice() != null) profile.setMaxPrice(request.getMaxPrice());
+        profile.setOnboardingComplete(true);
+        muaProfileRepository.save(profile);
+        return muaProfileService.getProfileByUserId(userId);
+    }
+
+    private AuthResponse buildAuthResponse(User user, UUID muaProfileId) {
+        String accessToken = tokenProvider.generateToken(user.getId(), user.getEmail(), user.getRole().name());
+        String refreshTokenValue = tokenProvider.generateRefreshToken(user.getId());
+        refreshTokenRepository.deleteByUserId(user.getId());
+        refreshTokenRepository.save(RefreshToken.builder()
+                .user(user)
+                .token(refreshTokenValue)
+                .expiresAt(Instant.now().plus(7, ChronoUnit.DAYS))
+                .build());
         return AuthResponse.builder()
-                .token(token)
+                .token(accessToken)
+                .refreshToken(refreshTokenValue)
                 .userId(user.getId())
                 .email(user.getEmail())
                 .fullName(user.getFullName())

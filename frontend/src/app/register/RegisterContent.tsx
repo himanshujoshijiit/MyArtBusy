@@ -31,7 +31,7 @@ export default function RegisterContent() {
         role: res.role,
         muaProfileId: res.muaProfileId,
       });
-      router.push(res.role === 'MUA' ? '/dashboard' : '/');
+      router.push(res.role === 'MUA' ? '/onboarding' : '/');
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Registration failed');
     } finally {

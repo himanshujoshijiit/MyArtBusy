@@ -46,11 +46,31 @@ services:
     environment:
       DATABASE_URL: postgresql://makeupseven:makeupseven_dev@postgres:5432/makeupseven
       JAVA_API_URL: http://backend-java:8080
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
       WHATSAPP_API_KEY: ${WHATSAPP_API_KEY:-}
       WHATSAPP_PHONE_ID: ${WHATSAPP_PHONE_ID:-}
+      WHATSAPP_VERIFY_TOKEN: ${WHATSAPP_VERIFY_TOKEN:-makeupseven_webhook_verify}
     depends_on:
       postgres:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  gateway:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - frontend
+      - backend-java
+      - backend-python
+    profiles:
+      - gateway
 
   frontend:
     build:

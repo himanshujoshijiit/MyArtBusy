@@ -20,6 +20,9 @@ public class MuaProfileResponse {
     private String bio;
     private String city;
     private String locality;
+    private String pincode;
+    private Double latitude;
+    private Double longitude;
     private String country;
     private String countryCode;
     private Set<Occasion> occasions;
@@ -31,6 +34,7 @@ public class MuaProfileResponse {
     private Integer totalBookings;
     private Boolean topArtist;
     private Boolean verified;
+    private Boolean onboardingComplete;
     private Boolean featured;
     private Integer responseTimeMinutes;
     private String responseTimeLabel;

@@ -34,6 +34,7 @@ public class DataSeeder implements CommandLineRunner {
                 log.info("Seeding courses...");
                 seedCourses();
             }
+            ensureAdminUser();
             log.info("Database already seeded, skipping");
             return;
         }
@@ -93,9 +94,31 @@ public class DataSeeder implements CommandLineRunner {
                 .build();
         userRepository.save(demoClient);
 
+        User admin = User.builder()
+                .email("admin@makeupseven.com")
+                .passwordHash(passwordEncoder.encode("admin123"))
+                .fullName("Platform Admin")
+                .phone("9000000000")
+                .role(UserRole.ADMIN)
+                .build();
+        userRepository.save(admin);
+
         seedCourses();
 
-        log.info("Seeded 5 MUAs + 1 demo client + courses (demo@makeupseven.com / demo123)");
+        log.info("Seeded 5 MUAs + demo client + admin (admin@makeupseven.com / admin123)");
+    }
+
+    private void ensureAdminUser() {
+        if (!userRepository.existsByEmail("admin@makeupseven.com")) {
+            userRepository.save(User.builder()
+                    .email("admin@makeupseven.com")
+                    .passwordHash(passwordEncoder.encode("admin123"))
+                    .fullName("Platform Admin")
+                    .phone("9000000000")
+                    .role(UserRole.ADMIN)
+                    .build());
+            log.info("Created admin user: admin@makeupseven.com / admin123");
+        }
     }
 
     private void seedCourses() {
@@ -166,6 +189,10 @@ public class DataSeeder implements CommandLineRunner {
                 .featured(featured)
                 .responseTimeMinutes(responseMins)
                 .subscriptionTier(tier)
+                .onboardingComplete(true)
+                .pincode(localityPincode(locality))
+                .latitude(localityLat(locality))
+                .longitude(localityLng(locality))
                 .active(true)
                 .build();
 
@@ -221,6 +248,39 @@ public class DataSeeder implements CommandLineRunner {
                     .name("Makeup Session").description("Professional makeup session")
                     .price(min).durationMinutes(90).occasion(occasions.iterator().next()).build());
         }
+    }
+
+    private String localityPincode(String locality) {
+        return switch (locality) {
+            case "Indiranagar" -> "560038";
+            case "Koramangala" -> "560034";
+            case "Whitefield" -> "560066";
+            case "Jayanagar" -> "560041";
+            case "HSR Layout" -> "560102";
+            default -> "560001";
+        };
+    }
+
+    private double localityLat(String locality) {
+        return switch (locality) {
+            case "Indiranagar" -> 12.9784;
+            case "Koramangala" -> 12.9352;
+            case "Whitefield" -> 12.9698;
+            case "Jayanagar" -> 12.9250;
+            case "HSR Layout" -> 12.9116;
+            default -> 12.9716;
+        };
+    }
+
+    private double localityLng(String locality) {
+        return switch (locality) {
+            case "Indiranagar" -> 77.6408;
+            case "Koramangala" -> 77.6245;
+            case "Whitefield" -> 77.7499;
+            case "Jayanagar" -> 77.5938;
+            case "HSR Layout" -> 77.6388;
+            default -> 77.5946;
+        };
     }
 
     private void seedAvailability(MuaProfile profile) {

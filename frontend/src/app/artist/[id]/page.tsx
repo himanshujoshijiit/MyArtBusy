@@ -78,9 +78,15 @@ export default function ArtistPage() {
         <div className="card shrink-0 p-6 sm:w-72">
           <p className="mb-1 text-sm text-charcoal/50">Starting from</p>
           <p className="mb-4 text-2xl font-bold text-rose-600">{formatPrice(artist.minPrice)}</p>
-          <button onClick={() => handleBook()} className="btn-primary w-full">
+          <button onClick={() => handleBook()} className="btn-primary w-full min-h-[44px]">
             <Calendar className="h-4 w-4" /> Book Now
           </button>
+          <button onClick={() => router.push(`/artist/${id}/book?trial=1`)} className="btn-secondary mt-2 w-full min-h-[44px]">
+            Book Trial Session (50% off)
+          </button>
+          <Link href={`/artist/${id}/quote`} className="mt-2 block text-center text-sm font-medium text-rose-600 hover:underline">
+            Request a Custom Quote →
+          </Link>
         </div>
       </div>
 

@@ -17,6 +17,9 @@ public class MuaProfileRequest {
     @NotBlank
     private String city;
     private String locality;
+    private String pincode;
+    private Double latitude;
+    private Double longitude;
     private String country;
     private String countryCode;
     private Set<Occasion> occasions;

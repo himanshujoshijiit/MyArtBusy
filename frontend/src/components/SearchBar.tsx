@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Search, MapPin, Palette, Star, Calendar } from 'lucide-react';
+import { Search, MapPin, Palette, Star, Calendar, Navigation } from 'lucide-react';
+import { t, getLocale } from '@/lib/i18n';
 
 interface Props {
   onSearch: (params: Record<string, string | number | boolean>) => void;
@@ -9,8 +10,10 @@ interface Props {
 }
 
 export default function SearchBar({ onSearch, loading }: Props) {
+  const locale = getLocale();
   const [city, setCity] = useState('Bengaluru');
   const [locality, setLocality] = useState('');
+  const [pincode, setPincode] = useState('');
   const [occasion, setOccasion] = useState('');
   const [skinTone, setSkinTone] = useState('');
   const [minBudget, setMinBudget] = useState('');
@@ -19,6 +22,8 @@ export default function SearchBar({ onSearch, loading }: Props) {
   const [availableDate, setAvailableDate] = useState('');
   const [topArtistOnly, setTopArtistOnly] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [nearMe, setNearMe] = useState(false);
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [occasions, setOccasions] = useState<{ value: string; label: string }[]>([]);
 
   useEffect(() => {
@@ -31,10 +36,22 @@ export default function SearchBar({ onSearch, loading }: Props) {
       ]));
   }, []);
 
+  const useMyLocation = () => {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setNearMe(true);
+      },
+      () => alert('Location access denied')
+    );
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const params: Record<string, string | number | boolean> = { city };
     if (locality) params.locality = locality;
+    if (pincode) params.pincode = pincode;
     if (occasion) params.occasion = occasion;
     if (skinTone) params.skin_tone = skinTone;
     if (minBudget) params.min_budget = Number(minBudget);
@@ -42,6 +59,12 @@ export default function SearchBar({ onSearch, loading }: Props) {
     if (minRating) params.min_rating = Number(minRating);
     if (availableDate) params.available_date = availableDate;
     if (topArtistOnly) params.top_artist_only = true;
+    if (nearMe && coords) {
+      params.latitude = coords.lat;
+      params.longitude = coords.lng;
+      params.sort_by = 'distance';
+      params.radius_km = 15;
+    }
     onSearch(params);
   };
 
@@ -50,17 +73,21 @@ export default function SearchBar({ onSearch, loading }: Props) {
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
         <div className="flex flex-1 items-center gap-2 rounded-xl bg-charcoal/5 px-4 py-3">
           <MapPin className="h-5 w-5 shrink-0 text-rose-500" />
-          <input type="text" placeholder="City" value={city} onChange={e => setCity(e.target.value)}
+          <input type="text" placeholder={t('search.city', locale)} value={city} onChange={e => setCity(e.target.value)}
             className="w-full bg-transparent text-sm outline-none placeholder:text-charcoal/40" />
         </div>
         <div className="flex flex-1 items-center gap-2 rounded-xl bg-charcoal/5 px-4 py-3">
           <Search className="h-5 w-5 shrink-0 text-rose-500" />
           <select value={occasion} onChange={e => setOccasion(e.target.value)} className="w-full bg-transparent text-sm outline-none">
-            <option value="">All Occasions</option>
+            <option value="">{t('search.occasion', locale)}</option>
             {occasions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
           </select>
         </div>
-        <button type="submit" disabled={loading} className="btn-primary shrink-0">
+        <button type="button" onClick={useMyLocation}
+          className={`flex shrink-0 items-center gap-1 rounded-xl px-3 py-3 text-sm font-medium ${nearMe ? 'bg-rose-500 text-white' : 'bg-charcoal/5 text-charcoal/70'}`}>
+          <Navigation className="h-4 w-4" /> {t('search.nearMe', locale)}
+        </button>
+        <button type="submit" disabled={loading} className="btn-primary shrink-0 min-h-[44px]">
           {loading ? 'Searching...' : 'Find Artists'}
         </button>
       </div>
@@ -77,7 +104,8 @@ export default function SearchBar({ onSearch, loading }: Props) {
 
       {showFilters && (
         <div className="mt-3 grid gap-3 border-t border-charcoal/5 px-2 pt-3 sm:grid-cols-2 lg:grid-cols-3">
-          <input type="text" placeholder="Locality (Indiranagar)" value={locality} onChange={e => setLocality(e.target.value)} className="input-field !py-2" />
+          <input type="text" placeholder={t('search.locality', locale)} value={locality} onChange={e => setLocality(e.target.value)} className="input-field !py-2" />
+          <input type="text" placeholder={t('search.pincode', locale)} value={pincode} onChange={e => setPincode(e.target.value)} className="input-field !py-2" maxLength={6} />
           <div className="flex items-center gap-2">
             <Palette className="h-4 w-4 shrink-0 text-charcoal/40" />
             <select value={skinTone} onChange={e => setSkinTone(e.target.value)} className="input-field !py-2">

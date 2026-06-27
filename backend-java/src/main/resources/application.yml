@@ -32,6 +32,7 @@ makeupseven:
   jwt:
     secret: ${JWT_SECRET:makeupseven-dev-secret-key-minimum-256-bits-required-for-hs256-algorithm}
     expiration-ms: 86400000
+  upload-dir: ${UPLOAD_DIR:uploads}
   razorpay:
     key-id: ${RAZORPAY_KEY_ID:}
     key-secret: ${RAZORPAY_KEY_SECRET:}

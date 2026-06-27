@@ -1,6 +1,7 @@
 package com.makeupseven.model;
 
 import com.makeupseven.model.enums.BookingStatus;
+import com.makeupseven.model.enums.BookingType;
 import com.makeupseven.model.enums.Occasion;
 import com.makeupseven.model.enums.PaymentStatus;
 import jakarta.persistence.*;
@@ -50,6 +51,10 @@ public class Booking {
     @Enumerated(EnumType.STRING)
     private Occasion occasion;
 
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private BookingType bookingType = BookingType.STANDARD;
+
     @Column(length = 1000)
     private String notes;
 
@@ -78,6 +83,12 @@ public class Booking {
 
     @Builder.Default
     private Boolean reviewRequested = false;
+
+    private BigDecimal refundAmount;
+
+    private Instant cancelledAt;
+
+    private String cancellationReason;
 
     @CreationTimestamp
     @Column(updatable = false)

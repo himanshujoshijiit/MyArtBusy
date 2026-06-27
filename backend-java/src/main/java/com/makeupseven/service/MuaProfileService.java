@@ -47,6 +47,9 @@ public class MuaProfileService {
         profile.setBio(request.getBio());
         profile.setCity(request.getCity());
         profile.setLocality(request.getLocality());
+        if (request.getPincode() != null) profile.setPincode(request.getPincode());
+        if (request.getLatitude() != null) profile.setLatitude(request.getLatitude());
+        if (request.getLongitude() != null) profile.setLongitude(request.getLongitude());
         if (request.getCountry() != null) profile.setCountry(request.getCountry());
         if (request.getCountryCode() != null) profile.setCountryCode(request.getCountryCode());
         if (request.getOccasions() != null) profile.setOccasions(request.getOccasions());
@@ -111,6 +114,9 @@ public class MuaProfileService {
                 .bio(p.getBio())
                 .city(p.getCity())
                 .locality(p.getLocality())
+                .pincode(p.getPincode())
+                .latitude(p.getLatitude())
+                .longitude(p.getLongitude())
                 .country(p.getCountry())
                 .countryCode(p.getCountryCode())
                 .occasions(p.getOccasions())
@@ -122,6 +128,7 @@ public class MuaProfileService {
                 .totalBookings(p.getTotalBookings())
                 .topArtist(p.getTopArtist())
                 .verified(p.getVerified())
+                .onboardingComplete(p.getOnboardingComplete())
                 .featured(p.getFeatured())
                 .responseTimeMinutes(p.getResponseTimeMinutes())
                 .responseTimeLabel(formatResponseTime(p.getResponseTimeMinutes()))

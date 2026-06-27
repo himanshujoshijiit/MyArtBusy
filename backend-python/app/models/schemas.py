@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field
 class SearchRequest(BaseModel):
     city: Optional[str] = None
     locality: Optional[str] = None
+    pincode: Optional[str] = None
     occasion: Optional[str] = None
     skin_tone: Optional[str] = None
     min_budget: Optional[float] = None
@@ -12,7 +13,10 @@ class SearchRequest(BaseModel):
     min_rating: Optional[float] = None
     available_date: Optional[str] = None
     top_artist_only: bool = False
-    sort_by: str = "rating"  # rating, price_low, price_high, bookings
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    radius_km: float = Field(default=10.0, ge=1, le=50)
+    sort_by: str = "rating"
     page: int = Field(default=1, ge=1)
     page_size: int = Field(default=20, ge=1, le=50)
 
@@ -23,6 +27,7 @@ class MuaSearchResult(BaseModel):
     bio: Optional[str]
     city: str
     locality: Optional[str]
+    pincode: Optional[str] = None
     country: Optional[str]
     occasions: list[str]
     skin_tone_expertise: list[str]
@@ -37,6 +42,7 @@ class MuaSearchResult(BaseModel):
     response_time_label: str
     portfolio_preview: list[str]
     relevance_score: float = 0.0
+    distance_km: Optional[float] = None
 
 
 class SearchResponse(BaseModel):

@@ -23,4 +23,13 @@ public interface BookingRepository extends JpaRepository<Booking, UUID> {
     List<Booking> findByMuaProfileIdAndBookingDateBetween(UUID muaId, LocalDate start, LocalDate end);
 
     List<Booking> findByStatusAndReviewRequestedFalse(BookingStatus status);
+
+    @Query("SELECT b FROM Booking b WHERE b.bookingDate = :tomorrow " +
+           "AND b.status IN (com.makeupseven.model.enums.BookingStatus.CONFIRMED, " +
+           "com.makeupseven.model.enums.BookingStatus.DEPOSIT_PAID)")
+    List<Booking> findUpcomingForReminder(@Param("tomorrow") LocalDate tomorrow);
+
+    @Query("SELECT b FROM Booking b WHERE b.status = com.makeupseven.model.enums.BookingStatus.COMPLETED " +
+           "AND b.reviewRequested = true AND b.updatedAt < CURRENT_TIMESTAMP - 1 DAY")
+    List<Booking> findPendingReviewReminders();
 }

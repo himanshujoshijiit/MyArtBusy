@@ -44,6 +44,12 @@ public class MuaProfile {
 
     private String locality;
 
+    private String pincode;
+
+    private Double latitude;
+
+    private Double longitude;
+
     private String country;
 
     @Builder.Default
@@ -86,6 +92,11 @@ public class MuaProfile {
 
     @Builder.Default
     private Boolean verified = false;
+
+    @Builder.Default
+    private Boolean onboardingComplete = false;
+
+    private String verificationDocumentUrl;
 
     @Builder.Default
     private Boolean featured = false;

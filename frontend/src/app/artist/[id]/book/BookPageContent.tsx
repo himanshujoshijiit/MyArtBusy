@@ -20,6 +20,7 @@ export default function BookPageContent() {
   const router = useRouter();
   const { user } = useAuth();
   const serviceId = searchParams.get('service');
+  const isTrial = searchParams.get('trial') === '1';
 
   const [artist, setArtist] = useState<MuaProfile | null>(null);
   const [slots, setSlots] = useState<AvailabilitySlot[]>([]);
@@ -49,7 +50,8 @@ export default function BookPageContent() {
 
   const service = artist?.services.find(s => s.id === selectedService);
   const price = service?.price || artist?.minPrice || 5000;
-  const deposit = Math.round(Number(price) * 0.25);
+  const displayPrice = isTrial ? Math.round(Number(price) * 0.5) : Number(price);
+  const deposit = Math.round(displayPrice * 0.25);
 
   const datesWithSlots = Array.from(new Set(slots.filter(s => s.available).map(s => s.slotDate)));
   const timesForDate = slots.filter(s => s.slotDate === selectedDate && s.available);
@@ -68,7 +70,8 @@ export default function BookPageContent() {
         bookingDate: selectedDate,
         startTime: selectedTime,
         occasion: service?.occasion || artist?.occasions[0],
-        notes,
+        bookingType: isTrial ? 'TRIAL' : 'STANDARD',
+        notes: isTrial ? `[TRIAL SESSION] ${notes}` : notes,
       });
       setBookingId(booking.id);
       setStep(2);

@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import SearchBar from '@/components/SearchBar';
 import ArtistCard from '@/components/ArtistCard';
+import CityLinks from '@/components/CityLinks';
+import SiteFooter from '@/components/SiteFooter';
 import { api, SearchResult, MuaProfile } from '@/lib/api';
 import { Sparkles, Shield, Calendar, Star, Crown } from 'lucide-react';
 
@@ -50,11 +52,14 @@ export default function HomePage() {
         </div>
       </section>
 
+      <CityLinks />
+
       <section className="border-b border-charcoal/5 bg-white py-8">
         <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-center gap-8 px-4 text-sm text-charcoal/60">
           <span className="flex items-center gap-2"><Shield className="h-5 w-5 text-emerald-500" /> Verified reviews only</span>
           <span className="flex items-center gap-2"><Calendar className="h-5 w-5 text-rose-500" /> Real-time availability</span>
           <span className="flex items-center gap-2"><Star className="h-5 w-5 text-gold-500" /> Top Artist badges</span>
+          <Link href="/search" className="flex items-center gap-2 text-rose-600 hover:underline">Near Me search →</Link>
         </div>
       </section>
 
@@ -114,6 +119,8 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      <SiteFooter />
     </>
   );
 }

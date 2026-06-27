@@ -184,22 +184,39 @@ function BookingRow({ booking: b, onAction }: { booking: Booking; onAction: () =
 
 function CalendarTab({ muaId, bookings, onAdded }: { muaId: string; bookings: Booking[]; onAdded: () => void }) {
   const [slots, setSlots] = useState<AvailabilitySlot[]>([]);
+  const [blocked, setBlocked] = useState<{ id: string; blockDate: string; reason?: string }[]>([]);
   const [date, setDate] = useState(format(addDays(new Date(), 1), 'yyyy-MM-dd'));
+  const [blockDate, setBlockDate] = useState('');
+  const [blockReason, setBlockReason] = useState('');
   const [startTime, setStartTime] = useState('10:00');
   const [endTime, setEndTime] = useState('12:00');
 
-  useEffect(() => {
+  const reloadSlots = () => {
     const start = format(new Date(), 'yyyy-MM-dd');
     const end = format(addDays(new Date(), 21), 'yyyy-MM-dd');
     api.bookings.availability(muaId, start, end).then(setSlots);
-  }, [muaId]);
+    api.blockedDates.list().then(setBlocked).catch(() => {});
+  };
+
+  useEffect(() => { reloadSlots(); }, [muaId]);
 
   const addSlot = async () => {
     await api.bookings.addAvailability({ slotDate: date, startTime: `${startTime}:00`, endTime: `${endTime}:00`, available: true });
     onAdded();
-    const start = format(new Date(), 'yyyy-MM-dd');
-    const end = format(addDays(new Date(), 21), 'yyyy-MM-dd');
-    api.bookings.availability(muaId, start, end).then(setSlots);
+    reloadSlots();
+  };
+
+  const addBlock = async () => {
+    if (!blockDate) return;
+    await api.blockedDates.add({ blockDate, reason: blockReason || 'Personal' });
+    setBlockDate('');
+    setBlockReason('');
+    reloadSlots();
+  };
+
+  const removeBlock = async (d: string) => {
+    await api.blockedDates.remove(d);
+    reloadSlots();
   };
 
   const bookedDates = new Set(bookings.filter(b => !['CANCELLED'].includes(b.status)).map(b => b.bookingDate));
@@ -215,6 +232,22 @@ function CalendarTab({ muaId, bookings, onAdded }: { muaId: string; bookings: Bo
             <input type="time" value={endTime} onChange={e => setEndTime(e.target.value)} className="input-field" />
           </div>
           <button onClick={addSlot} className="btn-primary w-full"><Plus className="h-4 w-4" /> Add Slot</button>
+        </div>
+        <div className="mt-6 border-t border-charcoal/5 pt-4">
+          <h4 className="mb-2 text-sm font-semibold">Block Dates (travel / personal)</h4>
+          <input type="date" value={blockDate} onChange={e => setBlockDate(e.target.value)} className="input-field mb-2" />
+          <input type="text" placeholder="Reason" value={blockReason} onChange={e => setBlockReason(e.target.value)} className="input-field mb-2" />
+          <button type="button" onClick={addBlock} className="btn-secondary w-full text-sm">Block Date</button>
+          {blocked.length > 0 && (
+            <ul className="mt-3 space-y-1 text-sm">
+              {blocked.map(b => (
+                <li key={b.id} className="flex justify-between rounded bg-red-50 px-2 py-1">
+                  <span>{b.blockDate} {b.reason && `— ${b.reason}`}</span>
+                  <button type="button" onClick={() => removeBlock(b.blockDate)} className="text-red-600">×</button>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </div>
       <div className="card p-6">

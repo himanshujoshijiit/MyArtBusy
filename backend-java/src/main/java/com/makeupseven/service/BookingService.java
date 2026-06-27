@@ -28,6 +28,8 @@ public class BookingService {
     private final NotificationClient notificationClient;
     private final ContractService contractService;
     private final ClientFaceProfileRepository clientFaceProfileRepository;
+    private final BlockedDateService blockedDateService;
+    private final RefundService refundService;
 
     @Value("${makeupseven.deposit-rate:0.25}")
     private double depositRate;
@@ -52,6 +54,10 @@ public class BookingService {
             }
         }
 
+        if (blockedDateService.isDateBlocked(mua.getId(), request.getBookingDate())) {
+            throw new RuntimeException("Artist is not available on this date");
+        }
+
         MuaService service = null;
         BigDecimal totalAmount;
         if (request.getServiceId() != null) {
@@ -62,6 +68,11 @@ public class BookingService {
             totalAmount = service.getPrice();
         } else {
             totalAmount = mua.getMinPrice() != null ? mua.getMinPrice() : BigDecimal.valueOf(5000);
+        }
+
+        BookingType bookingType = request.getBookingType() != null ? request.getBookingType() : BookingType.STANDARD;
+        if (bookingType == BookingType.TRIAL) {
+            totalAmount = totalAmount.multiply(BigDecimal.valueOf(0.5)).setScale(2, RoundingMode.HALF_UP);
         }
 
         BigDecimal deposit = totalAmount.multiply(BigDecimal.valueOf(depositRate)).setScale(2, RoundingMode.HALF_UP);
@@ -79,6 +90,7 @@ public class BookingService {
                 .startTime(request.getStartTime())
                 .endTime(endTime)
                 .occasion(request.getOccasion())
+                .bookingType(bookingType)
                 .notes(request.getNotes())
                 .totalAmount(totalAmount)
                 .depositAmount(deposit)
@@ -151,7 +163,7 @@ public class BookingService {
     }
 
     @Transactional
-    public BookingResponse cancelBooking(UUID bookingId, UUID userId) {
+    public BookingResponse cancelBooking(UUID bookingId, UUID userId, String reason) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
         boolean isClient = booking.getClient().getId().equals(userId);
@@ -160,7 +172,11 @@ public class BookingService {
         if (booking.getStatus() == BookingStatus.COMPLETED || booking.getStatus() == BookingStatus.CANCELLED) {
             throw new RuntimeException("Booking cannot be cancelled");
         }
+        BigDecimal refund = refundService.processCancellationRefund(booking);
         booking.setStatus(BookingStatus.CANCELLED);
+        booking.setCancelledAt(java.time.Instant.now());
+        booking.setCancellationReason(reason);
+        booking.setRefundAmount(refund);
         releaseSlot(booking);
         bookingRepository.save(booking);
         return toResponse(booking);
@@ -169,7 +185,9 @@ public class BookingService {
     public List<AvailabilitySlotDto> getAvailability(UUID muaId, LocalDate start, LocalDate end) {
         return availabilityRepository
                 .findByMuaProfileIdAndSlotDateBetweenAndAvailableTrueOrderBySlotDateAscStartTimeAsc(muaId, start, end)
-                .stream().map(this::toSlotDto).collect(Collectors.toList());
+                .stream()
+                .filter(s -> !blockedDateService.isDateBlocked(muaId, s.getSlotDate()))
+                .map(this::toSlotDto).collect(Collectors.toList());
     }
 
     @Transactional
@@ -242,11 +260,13 @@ public class BookingService {
                 .startTime(b.getStartTime())
                 .endTime(b.getEndTime())
                 .occasion(b.getOccasion())
+                .bookingType(b.getBookingType())
                 .notes(b.getNotes())
                 .totalAmount(b.getTotalAmount())
                 .depositAmount(b.getDepositAmount())
                 .commissionAmount(b.getCommissionAmount())
                 .remainingAmount(remaining)
+                .refundAmount(b.getRefundAmount())
                 .status(b.getStatus())
                 .paymentStatus(b.getPaymentStatus())
                 .razorpayOrderId(b.getRazorpayOrderId())

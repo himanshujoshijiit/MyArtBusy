@@ -43,8 +43,10 @@ public class BookingController {
     }
 
     @PostMapping("/{id}/cancel")
-    public BookingResponse cancel(Authentication auth, @PathVariable UUID id) {
-        return bookingService.cancelBooking(id, UUID.fromString(auth.getName()));
+    public BookingResponse cancel(Authentication auth, @PathVariable UUID id,
+                                  @RequestBody(required = false) CancelBookingRequest body) {
+        String reason = body != null ? body.getReason() : null;
+        return bookingService.cancelBooking(id, UUID.fromString(auth.getName()), reason);
     }
 
     @PostMapping("/{id}/confirm")

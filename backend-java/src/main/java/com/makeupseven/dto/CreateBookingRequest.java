@@ -1,5 +1,6 @@
 package com.makeupseven.dto;
 
+import com.makeupseven.model.enums.BookingType;
 import com.makeupseven.model.enums.Occasion;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -18,5 +19,6 @@ public class CreateBookingRequest {
     @NotNull
     private LocalTime startTime;
     private Occasion occasion;
+    private BookingType bookingType;
     private String notes;
 }
