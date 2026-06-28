@@ -56,7 +56,7 @@ public class PaymentService {
             JSONObject options = new JSONObject();
             options.put("amount", booking.getDepositAmount().multiply(java.math.BigDecimal.valueOf(100)).intValue());
             options.put("currency", "INR");
-            options.put("receipt", "booking_" + bookingId);
+            options.put("receipt", RazorpayConfig.receipt("bk_", bookingId));
             Order order = client.orders.create(options);
             booking.setRazorpayOrderId(order.get("id"));
             bookingRepository.save(booking);
@@ -69,9 +69,7 @@ public class PaymentService {
             );
         } catch (RazorpayException e) {
             log.error("Razorpay order failed: {}", e.getMessage());
-            throw new RuntimeException(
-                "Payment order creation failed. Check RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in your .env file "
-                + "(Dashboard → Settings → API Keys at dashboard.razorpay.com). Details: " + e.getMessage());
+            throw new RuntimeException("Payment order creation failed: " + e.getMessage());
         }
     }
 

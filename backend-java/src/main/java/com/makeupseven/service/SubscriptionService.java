@@ -48,7 +48,7 @@ public class SubscriptionService {
             JSONObject options = new JSONObject();
             options.put("amount", proTierPricePaise);
             options.put("currency", "INR");
-            options.put("receipt", "pro_" + mua.getId());
+            options.put("receipt", RazorpayConfig.receipt("pro_", mua.getId()));
             Order order = client.orders.create(options);
             return Map.of(
                 "orderId", order.get("id"),

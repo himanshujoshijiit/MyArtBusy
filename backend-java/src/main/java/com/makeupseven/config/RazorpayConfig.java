@@ -6,6 +6,8 @@ import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.util.UUID;
+
 @Component
 @Getter
 public class RazorpayConfig {
@@ -41,5 +43,16 @@ public class RazorpayConfig {
 
     public RazorpayClient client() throws RazorpayException {
         return new RazorpayClient(keyId, keySecret);
+    }
+
+    /** Razorpay receipt field max length is 40 characters. */
+    public static String receipt(String prefix, UUID id) {
+        String compact = id.toString().replace("-", "");
+        int maxSuffix = 40 - prefix.length();
+        if (maxSuffix <= 0) {
+            return prefix.substring(0, 40);
+        }
+        String suffix = compact.length() <= maxSuffix ? compact : compact.substring(0, maxSuffix);
+        return prefix + suffix;
     }
 }
