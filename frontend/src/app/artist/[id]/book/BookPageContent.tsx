@@ -18,11 +18,12 @@ export default function BookPageContent() {
   const { id } = useParams<{ id: string }>();
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const serviceId = searchParams.get('service');
   const isTrial = searchParams.get('trial') === '1';
 
   const [artist, setArtist] = useState<MuaProfile | null>(null);
+  const [artistError, setArtistError] = useState(false);
   const [slots, setSlots] = useState<AvailabilitySlot[]>([]);
   const [selectedService, setSelectedService] = useState(serviceId || '');
   const [selectedDate, setSelectedDate] = useState('');
@@ -34,19 +35,28 @@ export default function BookPageContent() {
   const [error, setError] = useState('');
   const [done, setDone] = useState(false);
 
-  useEffect(() => {
-    if (!user) router.push(`/login?redirect=/artist/${id}/book`);
-  }, [user, id, router]);
+  const returnPath = `/artist/${id}/book${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
 
   useEffect(() => {
-    api.muas.getById(id).then(a => {
-      setArtist(a);
-      if (serviceId) setSelectedService(serviceId);
-    });
+    if (authLoading) return;
+    if (!user) {
+      router.replace(`/login?redirect=${encodeURIComponent(returnPath)}`);
+    }
+  }, [user, authLoading, router, returnPath]);
+
+  useEffect(() => {
+    if (authLoading || !user) return;
+    setArtistError(false);
+    api.muas.getById(id)
+      .then(a => {
+        setArtist(a);
+        if (serviceId) setSelectedService(serviceId);
+      })
+      .catch(() => setArtistError(true));
     const start = format(new Date(), 'yyyy-MM-dd');
     const end = format(addDays(new Date(), 14), 'yyyy-MM-dd');
-    api.bookings.availability(id, start, end).then(setSlots);
-  }, [id, serviceId]);
+    api.bookings.availability(id, start, end).then(setSlots).catch(() => setSlots([]));
+  }, [id, serviceId, authLoading, user]);
 
   const service = artist?.services.find(s => s.id === selectedService);
   const price = service?.price || artist?.minPrice || 5000;
@@ -122,7 +132,21 @@ export default function BookPageContent() {
     }
   };
 
-  if (!artist) return <div className="py-20 text-center">Loading...</div>;
+  if (authLoading || !user) {
+    return <div className="py-20 text-center text-charcoal/50">Loading…</div>;
+  }
+
+  if (artistError) {
+    return (
+      <div className="mx-auto max-w-lg px-4 py-20 text-center">
+        <h1 className="font-display mb-2 text-2xl font-bold">Could not load booking</h1>
+        <p className="mb-6 text-charcoal/60">This artist profile is unavailable.</p>
+        <Link href="/search" className="btn-primary">Back to search</Link>
+      </div>
+    );
+  }
+
+  if (!artist) return <div className="py-20 text-center text-charcoal/50">Loading booking…</div>;
 
   if (done) {
     return (

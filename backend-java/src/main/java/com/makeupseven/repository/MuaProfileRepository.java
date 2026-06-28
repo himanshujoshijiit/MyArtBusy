@@ -10,6 +10,7 @@ import java.util.UUID;
 
 public interface MuaProfileRepository extends JpaRepository<MuaProfile, UUID> {
     Optional<MuaProfile> findByUserId(UUID userId);
+    Optional<MuaProfile> findByUser_Email(String email);
     List<MuaProfile> findByCityIgnoreCaseAndActiveTrue(String city);
     List<MuaProfile> findByActiveTrue();
 

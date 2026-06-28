@@ -1,12 +1,11 @@
 import type { Metadata } from 'next';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+import { resolveApiUrl } from '@/lib/api-url';
 
 type Props = { params: { id: string }; children: React.ReactNode };
 
 async function fetchArtist(id: string) {
   try {
-    const res = await fetch(`${API_URL}/api/muas/${id}`, { next: { revalidate: 300 } });
+    const res = await fetch(`${resolveApiUrl()}/api/muas/${id}`, { next: { revalidate: 300 } });
     if (!res.ok) return null;
     return res.json();
   } catch {

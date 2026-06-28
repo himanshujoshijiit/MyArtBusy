@@ -3,8 +3,8 @@ package com.makeupseven.service;
 import com.makeupseven.dto.*;
 import com.makeupseven.model.*;
 import com.makeupseven.repository.MuaProfileRepository;
-import com.makeupseven.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,7 +17,19 @@ import java.util.stream.Collectors;
 public class MuaProfileService {
 
     private final MuaProfileRepository muaProfileRepository;
-    private final UserRepository userRepository;
+
+    @Value("${makeupseven.owner-email:priya@priyaprachi.com}")
+    private String ownerEmail;
+
+    public MuaProfileResponse getPrimaryArtist() {
+        return muaProfileRepository.findByUser_Email(ownerEmail)
+                .filter(MuaProfile::getActive)
+                .map(this::toResponse)
+                .orElseGet(() -> muaProfileRepository.findByActiveTrue().stream()
+                        .findFirst()
+                        .map(this::toResponse)
+                        .orElseThrow(() -> new RuntimeException("No active artist profile found")));
+    }
 
     public MuaProfileResponse getById(UUID id) {
         return toResponse(muaProfileRepository.findById(id)

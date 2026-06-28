@@ -41,6 +41,7 @@ export default function Navbar() {
           <Link href="/courses" className="flex items-center gap-1 text-sm font-medium text-charcoal/70 hover:text-rose-600">
             <GraduationCap className="h-4 w-4" /> Academy
           </Link>
+          <Link href="/platform" className="text-sm font-medium text-charcoal/70 hover:text-rose-600">Features</Link>
           {user?.role === 'MUA' && (
             <>
               <Link href="/dashboard" className="text-sm font-medium text-charcoal/70 hover:text-rose-600">Dashboard</Link>
@@ -84,6 +85,7 @@ export default function Navbar() {
               </Link>
             ))}
             <Link href="/courses" onClick={() => setOpen(false)} className="py-2 text-sm font-medium">Academy</Link>
+            <Link href="/platform" onClick={() => setOpen(false)} className="py-2 text-sm font-medium">Features</Link>
             {user?.role === 'MUA' && (
               <>
                 <Link href="/dashboard" onClick={() => setOpen(false)} className="py-2 text-sm font-medium">Dashboard</Link>

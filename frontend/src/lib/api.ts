@@ -93,6 +93,7 @@ export const api = {
     completeOnboarding: (data: object) => apiFetch<MuaProfile>(`${API_URL}/api/auth/onboarding`, { method: 'POST', body: JSON.stringify(data) }),
   },
   muas: {
+    getPrimary: () => apiFetch<MuaProfile>(`${API_URL}/api/muas/primary`),
     getAll: () => apiFetch<MuaProfile[]>(`${API_URL}/api/muas`),
     getById: (id: string) => apiFetch<MuaProfile>(`${API_URL}/api/muas/${id}`),
     getMyProfile: () => apiFetch<MuaProfile>(`${API_URL}/api/muas/profile/me`),
@@ -140,7 +141,10 @@ export const api = {
   courses: {
     list: () => apiFetch<Course[]>(`${API_URL}/api/courses`),
     get: (id: string) => apiFetch<Course>(`${API_URL}/api/courses/${id}`),
-    enroll: (id: string) => apiFetch<Course>(`${API_URL}/api/courses/${id}/enroll`, { method: 'POST' }),
+    myEnrollments: () => apiFetch<string[]>(`${API_URL}/api/courses/my/enrollments`),
+    enroll: (id: string) => apiFetch<EnrollResponse>(`${API_URL}/api/courses/${id}/enroll`, { method: 'POST' }),
+    verifyPayment: (data: { orderId: string; paymentId: string; signature: string }) =>
+      apiFetch<EnrollResponse>(`${API_URL}/api/courses/payments/verify`, { method: 'POST', body: JSON.stringify(data) }),
   },
   dashboard: {
     stats: () => apiFetch<DashboardStats>(`${API_URL}/api/dashboard/stats`),
@@ -352,6 +356,13 @@ export interface Course {
   durationHours?: number;
   level?: string;
   enrollmentCount: number;
+}
+
+export interface EnrollResponse {
+  enrolled: boolean;
+  course: Course;
+  enrollmentId?: string;
+  payment?: PaymentOrder;
 }
 
 export interface DashboardStats {

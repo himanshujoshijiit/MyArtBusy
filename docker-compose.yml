@@ -33,10 +33,12 @@ services:
       CLOUDINARY_UPLOAD_PRESET: ${CLOUDINARY_UPLOAD_PRESET:-}
       PYTHON_SERVICE_URL: http://backend-python:8000
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
-      MARKETPLACE_MODE: ${MARKETPLACE_MODE:-true}
-      COMMISSION_RATE: ${COMMISSION_RATE:-0.10}
-      FREE_TIER_BOOKINGS: ${FREE_TIER_BOOKINGS:-3}
-      DEFAULT_MUA_TIER: ${DEFAULT_MUA_TIER:-FREE}
+      MARKETPLACE_MODE: ${MARKETPLACE_MODE:-false}
+      COMMISSION_RATE: ${COMMISSION_RATE:-0}
+      FREE_TIER_BOOKINGS: ${FREE_TIER_BOOKINGS:-9999}
+      DEFAULT_MUA_TIER: ${DEFAULT_MUA_TIER:-PRO}
+      SINGLE_ARTIST_MODE: ${SINGLE_ARTIST_MODE:-true}
+      OWNER_EMAIL: ${OWNER_EMAIL:-priya@priyaprachi.com}
     depends_on:
       postgres:
         condition: service_healthy
@@ -118,6 +120,7 @@ services:
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8080}
       NEXT_PUBLIC_SEARCH_URL: ${NEXT_PUBLIC_SEARCH_URL:-http://localhost:8000}
       NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:3000}
+      INTERNAL_API_URL: http://backend-java:8080
     depends_on:
       - backend-java
       - backend-python

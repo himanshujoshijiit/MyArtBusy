@@ -32,6 +32,11 @@ public class MuaController {
         return muaProfileService.getByCity(city);
     }
 
+    @GetMapping("/primary")
+    public MuaProfileResponse getPrimary() {
+        return muaProfileService.getPrimaryArtist();
+    }
+
     @GetMapping("/{id}")
     public MuaProfileResponse getById(@PathVariable UUID id) {
         return muaProfileService.getById(id);

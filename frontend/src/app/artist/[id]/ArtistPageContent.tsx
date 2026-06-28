@@ -20,11 +20,21 @@ export default function ArtistPageContent({ artistId, artist, reviews, slots }: 
   const { user } = useAuth();
 
   const handleBook = (serviceId?: string) => {
+    const bookPath = `/artist/${artistId}/book${serviceId ? `?service=${serviceId}` : ''}`;
     if (!user) {
-      router.push(`/login?redirect=/artist/${artistId}/book${serviceId ? `?service=${serviceId}` : ''}`);
+      router.push(`/login?redirect=${encodeURIComponent(bookPath)}`);
       return;
     }
-    router.push(`/artist/${artistId}/book${serviceId ? `?service=${serviceId}` : ''}`);
+    router.push(bookPath);
+  };
+
+  const handleTrialBook = () => {
+    const bookPath = `/artist/${artistId}/book?trial=1`;
+    if (!user) {
+      router.push(`/login?redirect=${encodeURIComponent(bookPath)}`);
+      return;
+    }
+    router.push(bookPath);
   };
 
   return (
@@ -66,7 +76,7 @@ export default function ArtistPageContent({ artistId, artist, reviews, slots }: 
           <button type="button" onClick={() => handleBook()} className="btn-primary w-full min-h-[44px]">
             <Calendar className="h-4 w-4" /> Book Now
           </button>
-          <button type="button" onClick={() => router.push(`/artist/${artistId}/book?trial=1`)} className="btn-secondary mt-2 w-full min-h-[44px]">
+          <button type="button" onClick={handleTrialBook} className="btn-secondary mt-2 w-full min-h-[44px]">
             Book Trial Session (50% off)
           </button>
           <Link href={`/artist/${artistId}/quote`} className="mt-2 block text-center text-sm font-medium text-rose-600 hover:underline">

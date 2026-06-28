@@ -48,4 +48,5 @@ makeupseven:
   pro-tier-price: ${PRO_TIER_PRICE:99900}
   free-tier-bookings: ${FREE_TIER_BOOKINGS:3}
   marketplace-mode: ${MARKETPLACE_MODE:true}
-  default-mua-tier: ${DEFAULT_MUA_TIER:FREE}
+  single-artist-mode: ${SINGLE_ARTIST_MODE:true}
+  owner-email: ${OWNER_EMAIL:priya@priyaprachi.com}

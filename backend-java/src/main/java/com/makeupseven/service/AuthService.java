@@ -32,10 +32,20 @@ public class AuthService {
     @Value("${makeupseven.default-mua-tier:FREE}")
     private String defaultMuaTier;
 
+    @Value("${makeupseven.single-artist-mode:false}")
+    private boolean singleArtistMode;
+
+    @Value("${makeupseven.owner-email:priya@priyaprachi.com}")
+    private String ownerEmail;
+
     @Transactional
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email already registered");
+        }
+        if (singleArtistMode && request.getRole() == UserRole.MUA
+                && !ownerEmail.equalsIgnoreCase(request.getEmail())) {
+            throw new RuntimeException("Artist registration is closed. This studio has one artist — use the owner account to manage the profile.");
         }
         User user = User.builder()
                 .email(request.getEmail())

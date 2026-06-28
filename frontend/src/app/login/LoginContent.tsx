@@ -6,6 +6,15 @@ import Link from 'next/link';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 
+function decodeRedirect(raw: string | null): string | null {
+  if (!raw) return null;
+  try {
+    return decodeURIComponent(raw);
+  } catch {
+    return raw;
+  }
+}
+
 export default function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -28,7 +37,7 @@ export default function LoginContent() {
         role: res.role,
         muaProfileId: res.muaProfileId,
       });
-      router.push(searchParams.get('redirect') || '/');
+      router.push(decodeRedirect(searchParams.get('redirect')) || '/');
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Login failed');
     } finally {
@@ -55,8 +64,8 @@ export default function LoginContent() {
           {loading ? 'Signing in...' : 'Sign In'}
         </button>
         <p className="text-center text-sm text-charcoal/50">
-          Demo: demo@makeupseven.com / demo123<br />
-          Artist: priya@makeupseven.com / artist123
+          Demo client: demo@makeupseven.com / demo123<br />
+          Studio artist: priya@priyaprachi.com / priya123
         </p>
       </form>
 

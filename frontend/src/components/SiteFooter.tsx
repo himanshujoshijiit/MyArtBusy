@@ -8,6 +8,7 @@ const LINKS = [
   { href: '/register?role=MUA', label: 'MUA onboarding' },
   { href: '/onboarding', label: 'Artist setup wizard' },
   { href: '/courses', label: 'Academy' },
+  { href: '/platform', label: 'Features & architecture' },
 ];
 
 const LEGAL = [
