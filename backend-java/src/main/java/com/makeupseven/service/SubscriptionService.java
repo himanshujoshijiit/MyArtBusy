@@ -1,5 +1,6 @@
 package com.makeupseven.service;
 
+import com.makeupseven.config.RazorpayConfig;
 import com.makeupseven.model.MuaProfile;
 import com.makeupseven.model.enums.SubscriptionTier;
 import com.makeupseven.repository.MuaProfileRepository;
@@ -22,12 +23,7 @@ import java.util.UUID;
 public class SubscriptionService {
 
     private final MuaProfileRepository muaProfileRepository;
-
-    @Value("${makeupseven.razorpay.key-id:}")
-    private String razorpayKeyId;
-
-    @Value("${makeupseven.razorpay.key-secret:}")
-    private String razorpayKeySecret;
+    private final RazorpayConfig razorpayConfig;
 
     @Value("${makeupseven.pro-tier-price:99900}")
     private int proTierPricePaise;
@@ -36,7 +32,7 @@ public class SubscriptionService {
         MuaProfile mua = muaProfileRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("MUA profile not found"));
 
-        if (razorpayKeyId == null || razorpayKeyId.isBlank()) {
+        if (!razorpayConfig.isConfigured()) {
             return Map.of(
                 "orderId", "order_pro_mock_" + mua.getId().toString().substring(0, 8),
                 "amount", proTierPricePaise,
@@ -48,7 +44,7 @@ public class SubscriptionService {
         }
 
         try {
-            RazorpayClient client = new RazorpayClient(razorpayKeyId, razorpayKeySecret);
+            RazorpayClient client = razorpayConfig.client();
             JSONObject options = new JSONObject();
             options.put("amount", proTierPricePaise);
             options.put("currency", "INR");
@@ -58,7 +54,7 @@ public class SubscriptionService {
                 "orderId", order.get("id"),
                 "amount", order.get("amount"),
                 "currency", order.get("currency"),
-                "keyId", razorpayKeyId,
+                "keyId", razorpayConfig.getKeyId(),
                 "mock", false,
                 "muaId", mua.getId().toString()
             );

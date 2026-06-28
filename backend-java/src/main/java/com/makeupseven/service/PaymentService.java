@@ -1,5 +1,6 @@
 package com.makeupseven.service;
 
+import com.makeupseven.config.RazorpayConfig;
 import com.makeupseven.model.Booking;
 import com.makeupseven.model.enums.BookingStatus;
 import com.makeupseven.model.enums.PaymentStatus;
@@ -11,7 +12,6 @@ import com.razorpay.Utils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,21 +31,14 @@ public class PaymentService {
     private final NotificationClient notificationClient;
     @Lazy
     private final ContractService contractService;
-
-    @Value("${makeupseven.razorpay.key-id:}")
-    private String razorpayKeyId;
-
-    @Value("${makeupseven.razorpay.key-secret:}")
-    private String razorpayKeySecret;
-
-    @Value("${makeupseven.razorpay.webhook-secret:}")
-    private String webhookSecret;
+    private final RazorpayConfig razorpayConfig;
 
     public Map<String, Object> createDepositOrder(UUID bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
 
-        if (razorpayKeyId == null || razorpayKeyId.isBlank()) {
+        if (!razorpayConfig.isConfigured()) {
+            log.info("Razorpay not configured — using mock payment for booking {}", bookingId);
             String mockOrderId = "order_mock_" + bookingId.toString().substring(0, 8);
             booking.setRazorpayOrderId(mockOrderId);
             bookingRepository.save(booking);
@@ -59,7 +52,7 @@ public class PaymentService {
         }
 
         try {
-            RazorpayClient client = new RazorpayClient(razorpayKeyId, razorpayKeySecret);
+            RazorpayClient client = razorpayConfig.client();
             JSONObject options = new JSONObject();
             options.put("amount", booking.getDepositAmount().multiply(java.math.BigDecimal.valueOf(100)).intValue());
             options.put("currency", "INR");
@@ -71,11 +64,14 @@ public class PaymentService {
                 "orderId", order.get("id"),
                 "amount", order.get("amount"),
                 "currency", order.get("currency"),
-                "keyId", razorpayKeyId,
+                "keyId", razorpayConfig.getKeyId(),
                 "mock", false
             );
         } catch (RazorpayException e) {
-            throw new RuntimeException("Payment order creation failed: " + e.getMessage());
+            log.error("Razorpay order failed: {}", e.getMessage());
+            throw new RuntimeException(
+                "Payment order creation failed. Check RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in your .env file "
+                + "(Dashboard → Settings → API Keys at dashboard.razorpay.com). Details: " + e.getMessage());
         }
     }
 
@@ -89,13 +85,13 @@ public class PaymentService {
             return;
         }
 
-        if (razorpayKeyId != null && !razorpayKeyId.isBlank() && signature != null && !signature.equals("mock")) {
+        if (razorpayConfig.isConfigured() && signature != null && !signature.equals("mock")) {
             try {
                 JSONObject options = new JSONObject();
                 options.put("razorpay_order_id", orderId);
                 options.put("razorpay_payment_id", paymentId);
                 options.put("razorpay_signature", signature);
-                if (!Utils.verifyPaymentSignature(options, razorpayKeySecret)) {
+                if (!Utils.verifyPaymentSignature(options, razorpayConfig.getKeySecret())) {
                     throw new RuntimeException("Invalid payment signature");
                 }
             } catch (Exception e) {
@@ -108,12 +104,12 @@ public class PaymentService {
 
     @Transactional
     public void handleWebhook(String rawBody, String signature) {
-        if (razorpayKeyId != null && !razorpayKeyId.isBlank()) {
-            if (webhookSecret == null || webhookSecret.isBlank()) {
+        if (razorpayConfig.isConfigured()) {
+            if (razorpayConfig.getWebhookSecret() == null || razorpayConfig.getWebhookSecret().isBlank()) {
                 throw new RuntimeException("Webhook secret not configured");
             }
             try {
-                if (!Utils.verifyWebhookSignature(rawBody, signature, webhookSecret)) {
+                if (!Utils.verifyWebhookSignature(rawBody, signature, razorpayConfig.getWebhookSecret())) {
                     throw new RuntimeException("Invalid webhook signature");
                 }
             } catch (Exception e) {
