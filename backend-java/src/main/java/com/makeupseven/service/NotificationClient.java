@@ -81,6 +81,13 @@ public class NotificationClient {
         ));
     }
 
+    public void sendOtp(String phone, String code) {
+        post("/api/notifications/otp", Map.of(
+                "phone", phone != null ? phone : "",
+                "code", code
+        ));
+    }
+
     private void post(String path, Map<String, String> body) {
         try {
             restClient.post()

@@ -40,6 +40,9 @@ public class BookingService {
     @Value("${makeupseven.free-tier-bookings:3}")
     private int freeTierBookings;
 
+    @Value("${makeupseven.marketplace-mode:true}")
+    private boolean marketplaceMode;
+
     @Transactional
     public BookingResponse createBooking(UUID clientId, CreateBookingRequest request) {
         User client = userRepository.findById(clientId)
@@ -47,7 +50,7 @@ public class BookingService {
         MuaProfile mua = muaProfileRepository.findById(request.getMuaId())
                 .orElseThrow(() -> new RuntimeException("MUA not found"));
 
-        if (mua.getSubscriptionTier() == SubscriptionTier.FREE) {
+        if (marketplaceMode && mua.getSubscriptionTier() == SubscriptionTier.FREE) {
             long monthlyCount = bookingRepository.countMonthlyBookings(mua.getId());
             if (monthlyCount >= freeTierBookings) {
                 throw new RuntimeException("This artist has reached their free tier booking limit. Upgrade to Pro required.");

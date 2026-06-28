@@ -4,9 +4,9 @@ services:
     environment:
       POSTGRES_DB: makeupseven
       POSTGRES_USER: makeupseven
-      POSTGRES_PASSWORD: makeupseven_dev
-    ports:
-      - "5432:5432"
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-makeupseven_dev}
+    # No ports published — DB reachable only on the internal Docker network.
+    # For local SQL clients: docker compose exec postgres psql -U makeupseven -d makeupseven
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init.sql
@@ -23,8 +23,9 @@ services:
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/makeupseven
       SPRING_DATASOURCE_USERNAME: makeupseven
-      SPRING_DATASOURCE_PASSWORD: makeupseven_dev
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-makeupseven_dev}
       JWT_SECRET: ${JWT_SECRET:-makeupseven-jwt-secret-change-in-production-min-256-bits}
+      REQUIRE_SECURE_JWT: ${REQUIRE_SECURE_JWT:-false}
       RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID:-}
       RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET:-}
       RAZORPAY_WEBHOOK_SECRET: ${RAZORPAY_WEBHOOK_SECRET:-}
@@ -32,6 +33,10 @@ services:
       CLOUDINARY_UPLOAD_PRESET: ${CLOUDINARY_UPLOAD_PRESET:-}
       PYTHON_SERVICE_URL: http://backend-python:8000
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      MARKETPLACE_MODE: ${MARKETPLACE_MODE:-true}
+      COMMISSION_RATE: ${COMMISSION_RATE:-0.10}
+      FREE_TIER_BOOKINGS: ${FREE_TIER_BOOKINGS:-3}
+      DEFAULT_MUA_TIER: ${DEFAULT_MUA_TIER:-FREE}
     depends_on:
       postgres:
         condition: service_healthy
@@ -47,12 +52,17 @@ services:
     ports:
       - "8000:8000"
     environment:
-      DATABASE_URL: postgresql://makeupseven:makeupseven_dev@postgres:5432/makeupseven
+      DATABASE_URL: postgresql://makeupseven:${POSTGRES_PASSWORD:-makeupseven_dev}@postgres:5432/makeupseven
       JAVA_API_URL: http://backend-java:8080
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
       WHATSAPP_API_KEY: ${WHATSAPP_API_KEY:-}
       WHATSAPP_PHONE_ID: ${WHATSAPP_PHONE_ID:-}
       WHATSAPP_VERIFY_TOKEN: ${WHATSAPP_VERIFY_TOKEN:-makeupseven_webhook_verify}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM: ${SMTP_FROM:-noreply@makeupseven.com}
     depends_on:
       postgres:
         condition: service_healthy
@@ -75,20 +85,44 @@ services:
     profiles:
       - gateway
 
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN:-localhost}
+      ACME_EMAIL: ${ACME_EMAIL:-}
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - frontend
+      - backend-java
+      - backend-python
+    profiles:
+      - production
+
   frontend:
     build:
       context: ./frontend
       args:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8080}
         NEXT_PUBLIC_SEARCH_URL: ${NEXT_PUBLIC_SEARCH_URL:-http://localhost:8000}
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:3000}
     ports:
       - "3000:3000"
     environment:
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8080}
       NEXT_PUBLIC_SEARCH_URL: ${NEXT_PUBLIC_SEARCH_URL:-http://localhost:8000}
+      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:3000}
     depends_on:
       - backend-java
       - backend-python
 
 volumes:
   postgres_data:
+  caddy_data:
+  caddy_config:

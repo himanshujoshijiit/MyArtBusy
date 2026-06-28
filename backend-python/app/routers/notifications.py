@@ -59,6 +59,11 @@ class QuoteResponseNotification(BaseModel):
     quoted_amount: str
 
 
+class OtpNotification(BaseModel):
+    phone: str
+    code: str
+
+
 def review_url(booking_id: str, frontend_url: str = "") -> str:
     base = frontend_url or settings.frontend_url
     return f"{base}/review/{booking_id}"
@@ -135,3 +140,13 @@ async def quote_response(data: QuoteResponseNotification):
     if data.client_email:
         email.send(data.client_email, f"Quote from {data.mua_name}", msg)
     return {"status": "sent", "quote_id": data.quote_id, "whatsapp": sent}
+
+
+@router.post("/otp")
+async def send_otp(data: OtpNotification):
+    msg = (
+        f"Your MakeupSeven login code is: {data.code}\n"
+        f"Valid for 10 minutes. Do not share this code."
+    )
+    sent = await whatsapp.send_message(data.phone, msg)
+    return {"status": "sent", "whatsapp": sent}

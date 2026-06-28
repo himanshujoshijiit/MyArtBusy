@@ -43,7 +43,9 @@ makeupseven:
   require-secure-jwt: ${REQUIRE_SECURE_JWT:false}
   python-service-url: ${PYTHON_SERVICE_URL:http://localhost:8000}
   frontend-url: ${FRONTEND_URL:http://localhost:3000}
-  commission-rate: 0.10
-  deposit-rate: 0.25
-  pro-tier-price: 99900
-  free-tier-bookings: 3
+  commission-rate: ${COMMISSION_RATE:0.10}
+  deposit-rate: ${DEPOSIT_RATE:0.25}
+  pro-tier-price: ${PRO_TIER_PRICE:99900}
+  free-tier-bookings: ${FREE_TIER_BOOKINGS:3}
+  marketplace-mode: ${MARKETPLACE_MODE:true}
+  default-mua-tier: ${DEFAULT_MUA_TIER:FREE}

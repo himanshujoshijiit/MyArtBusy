@@ -6,6 +6,7 @@ import com.makeupseven.model.enums.*;
 import com.makeupseven.repository.*;
 import com.makeupseven.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +27,10 @@ public class AuthService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final OtpCodeRepository otpCodeRepository;
     private final MuaProfileService muaProfileService;
+    private final NotificationClient notificationClient;
+
+    @Value("${makeupseven.default-mua-tier:FREE}")
+    private String defaultMuaTier;
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
@@ -43,12 +48,19 @@ public class AuthService {
 
         UUID muaProfileId = null;
         if (request.getRole() == UserRole.MUA) {
+            SubscriptionTier tier = SubscriptionTier.FREE;
+            try {
+                tier = SubscriptionTier.valueOf(defaultMuaTier.toUpperCase());
+            } catch (IllegalArgumentException ignored) {
+                // keep FREE
+            }
             MuaProfile profile = MuaProfile.builder()
                     .user(user)
                     .displayName(request.getFullName())
                     .city("Bengaluru")
                     .country("India")
                     .onboardingComplete(false)
+                    .subscriptionTier(tier)
                     .build();
             profile = muaProfileRepository.save(profile);
             muaProfileId = profile.getId();
@@ -92,8 +104,7 @@ public class AuthService {
                 .code(code)
                 .expiresAt(Instant.now().plus(10, ChronoUnit.MINUTES))
                 .build());
-        // In production: send via SMS/WhatsApp. Log for demo.
-        System.out.println("[OTP] Phone " + request.getPhone() + " code: " + code);
+        notificationClient.sendOtp(request.getPhone(), code);
     }
 
     @Transactional

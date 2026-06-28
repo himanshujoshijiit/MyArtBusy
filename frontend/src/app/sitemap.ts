@@ -11,6 +11,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/city/bengaluru`, changeFrequency: 'daily', priority: 0.9 },
     { url: `${BASE}/city/indiranagar`, changeFrequency: 'daily', priority: 0.8 },
     { url: `${BASE}/city/koramangala`, changeFrequency: 'daily', priority: 0.8 },
+    { url: `${BASE}/legal/privacy`, changeFrequency: 'monthly', priority: 0.5 },
+    { url: `${BASE}/legal/terms`, changeFrequency: 'monthly', priority: 0.5 },
+    { url: `${BASE}/legal/refund`, changeFrequency: 'monthly', priority: 0.6 },
   ];
 
   try {
